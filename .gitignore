@@ -1,0 +1,6 @@
+kernel/bin/
+kernel/iso_root
+*.iso
+kernel/limine/
+kernel/obj
+

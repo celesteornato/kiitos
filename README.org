@@ -1,0 +1,13 @@
+#+TITLE:KITOOS
+* Best OS.
+* Features
++ Full color support!!!
++ 64 bit protected mode and no way to interact with it!!!!
++ No OS despite it being in the name
+** Requires Nix to build
+#+begin_src bash
+  # In Kiitos/
+  nix-shell ./gcc.nix
+  cd kernel
+  make
+#+end_src
