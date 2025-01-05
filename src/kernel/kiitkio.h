@@ -12,7 +12,8 @@ struct PSF_font{
 };
 extern struct PSF_font _binary_Solarize_12x29_psf_start;
 extern struct PSF_font _binary_inconsolata_psf_start;
-static struct PSF_font *default_font = &_binary_inconsolata_psf_start;
+extern struct PSF_font _binary_powerline_font_psf_start;
+
 
 void kcolor_fbuff(struct limine_framebuffer *framebuffer, uint32_t color);
 
@@ -21,6 +22,9 @@ void k_putc(unsigned short int unicodecharacter, int start_x, int start_y, uint3
 
 void k_puts(char *string, uint32_t start_x, uint32_t start_y, uint32_t fg, uint32_t bg,
             struct limine_framebuffer *fb);
+
+void k_setfont(struct PSF_font*);
+struct PSF_font* k_getfont(void);
 
 void outb(uint16_t port, uint8_t val);
 

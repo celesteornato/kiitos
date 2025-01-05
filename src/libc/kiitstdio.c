@@ -1,52 +1,39 @@
 #include "kiitstdio.h"
 #include "../kernel/kiitkio.h"
 #include <stddef.h>
-#include <stdint.h>
-
-struct out out1;
 
 #define PIXEL uint32_t
-typedef struct {
-  uint32_t magic;         /* magic bytes to identify PSF */
-  uint32_t version;       /* zero */
-  uint32_t headersize;    /* offset of bitmaps in file, 32 */
-  uint32_t flags;         /* 0 if there's no unicode table */
-  uint32_t numglyph;      /* number of glyphs */
-  uint32_t bytesperglyph; /* size of each glyph */
-  PIXEL height;           /* height in pixels */
-  PIXEL width;            /* width in pixels */
-} PSF_font;
 static const char KB_LOOKUP[255] = {
-    0,    0,    '1',  '2', '3', '4', '5', '6', '7', '8', '9', '0', '-',  '=',
-    '\b', '\t', 'q',  'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[',  ']',
+    0,    0,    '1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-',  '=',
+    '\b', '\t', 'q', 'w', 'e', 'r', 't', 'y', 'u', 'i', 'o', 'p', '[',  ']',
     '\n', 0,    'a', 's', 'd', 'f', 'g', 'h', 'j', 'k', 'l', ';', '\'', '`',
-    0,    '\\', 'z',  'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0,    '*',
-    0,    ' ',  0,    0,   0,   0,   0,   0,   0,   0,   0,   0,   0,    0,
-    0,    '7',  '8',  '9', '-', '4', '5', '6', '+', '1', '2', '3', '0',  '.'};
+    0,    '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0,    '*',
+    0,    ' ',  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,    0,
+    0,    '7',  '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0',  '.'};
 
-char handle_special_char(char c) {
+char handle_special_char(char c, struct out *otp) {
   switch (c) {
   case '\n': {
-    out1.cursor.x = 0;
-    ++out1.cursor.y;
+    otp->cursor.x = 0;
+    ++otp->cursor.y;
     break;
   }
   case '\r': {
-    out1.cursor.x = 0;
+    otp->cursor.x = 0;
     break;
   }
   case '\b': {
-    --out1.cursor.x;
+    --otp->cursor.x;
     break;
   }
   case '\t': {
-    out1.cursor.x += 4;
+    otp->cursor.x += 4;
     break;
   }
   case '\f': {
-    out1.cursor.x = 0;
-    out1.cursor.y = 0;
-    kcolor_fbuff(out1.fb, g_stdbg);
+    otp->cursor.x = 0;
+    otp->cursor.y = 0;
+    kcolor_fbuff(otp->fb, otp->bg);
     break;
   }
   default: {
@@ -56,31 +43,31 @@ char handle_special_char(char c) {
   return 1;
 }
 
-void printc(char c) {
-  if (handle_special_char(c))
+void printc(char c, struct out *otp) {
+  if (handle_special_char(c, otp))
     return;
-  if (out1.cursor.x > out1.bounds.x) {
-    ++out1.cursor.y;
-    out1.cursor.x = 0;
+  if (otp->cursor.x > otp->bounds.x) {
+    ++otp->cursor.y;
+    otp->cursor.x = 0;
   }
-  if (out1.cursor.y > out1.bounds.y)
-    out1.cursor.y = 0;
-  k_putc(c, out1.cursor.x, out1.cursor.y, g_stdfg, g_stdbg, out1.fb);
-  ++out1.cursor.x;
+  if (otp->cursor.y > otp->bounds.y)
+    otp->cursor.y = 0;
+  k_putc(c, otp->cursor.x, otp->cursor.y, otp->fg, otp->bg, otp->fb);
+  ++otp->cursor.x;
 }
 
-void prints(char *string) {
+void prints(char *string, struct out *otp) {
   char c;
   while ((c = *string) != 0) {
-    printc(c);
+    printc(c, otp);
     ++string;
   }
 }
 
-void printd(long num) {
+void printd(long num, struct out *otp) {
   if (num > 10)
-    printd(num / 10);
-  printc((num % 10) + '0');
+    printd(num / 10, otp);
+  printc((num % 10) + '0', otp);
 }
 
 struct out out_new(struct limine_framebuffer *fb) {
@@ -88,8 +75,8 @@ struct out out_new(struct limine_framebuffer *fb) {
       .cursor.x = 0,
       .cursor.y = 0,
       .fb = fb,
-      .bounds.x = fb->width / default_font->width,
-      .bounds.y = fb->height / default_font->height,
+      .bounds.x = fb->width / k_getfont()->width - 1,
+      .bounds.y = fb->height / k_getfont()->height - 1,
   };
 }
 

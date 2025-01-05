@@ -1,4 +1,4 @@
-#include "stdint.h"
+#include <stdint.h>
 /*
   made to work with Limine Revision 3 Framebuffers as a drop-in
 */
@@ -12,14 +12,13 @@ struct out {
     unsigned char x;
     unsigned char y;
   } bounds;
+  uint32_t fg;
+  uint32_t bg;
 };
 
-static uint32_t g_stdfg = 0xffffff;
-static uint32_t g_stdbg = 0x000000;
-
-void printc(char c);
-void printd(long num);
-void prints(char *string);
+void printc(char c, struct out*);
+void printd(long num, struct out*);
+void prints(char *string, struct out*);
 unsigned char get_kb_key(void);
 unsigned char get_kb_raw(void);
 struct out out_new(struct limine_framebuffer *fb);

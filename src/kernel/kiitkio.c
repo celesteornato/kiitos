@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-
+static struct PSF_font *default_font = &_binary_powerline_font_psf_start;
 
 inline uint8_t inb(uint16_t port) {
   uint8_t ret;
@@ -15,9 +15,17 @@ inline void outb(uint16_t port, uint8_t val) {
   return;
 }
 
+void k_setfont(struct PSF_font* font)
+{
+  default_font = font;
+}
+struct PSF_font* k_getfont(void)
+{
+  return default_font;
+}
+
 void k_putc(unsigned short int c, int start_x, int start_y, uint32_t fg,
             uint32_t bg, struct limine_framebuffer *fb) {
-
   if (default_font->flags == 0 && c > 128)
     return;
   char *glyph = (char *)default_font + default_font->headersize +
