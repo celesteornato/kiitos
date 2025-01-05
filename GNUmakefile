@@ -78,7 +78,7 @@ override ASFILES := $(filter %.S,$(SRCFILES))
 override NASMFILES := $(filter %.asm,$(SRCFILES))
 override OBJ := $(addprefix obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o))
 override HEADER_DEPS := $(addprefix obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
-EXTRA_DEPS=src/font.o
+EXTRA_DEPS=src/assets_compiled/*
 
 # Default target. This must come first, before header dependencies.
 .PHONY: all

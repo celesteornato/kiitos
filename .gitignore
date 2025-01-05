@@ -1,6 +1,6 @@
-kernel/bin/
-kernel/iso_root
+bin/
+iso_root
 *.iso
-kernel/limine/
-kernel/obj
+limine/
+obj
 
