@@ -33,7 +33,7 @@ extern "C" {
 #endif
 
 #ifndef LIMINE_API_REVISION
-#  define LIMINE_API_REVISION 0
+#define LIMINE_API_REVISION 0
 #endif
 
 #if LIMINE_API_REVISION > 2
