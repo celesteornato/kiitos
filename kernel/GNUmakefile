@@ -78,6 +78,7 @@ override ASFILES := $(filter %.S,$(SRCFILES))
 override NASMFILES := $(filter %.asm,$(SRCFILES))
 override OBJ := $(addprefix obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o))
 override HEADER_DEPS := $(addprefix obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
+EXTRA_DEPS=src/font.o
 
 # Default target. This must come first, before header dependencies.
 .PHONY: all
@@ -89,7 +90,7 @@ all: bin/$(OUTPUT)
 # Link rules for the final executable.
 bin/$(OUTPUT): GNUmakefile linker.ld $(OBJ)
 	mkdir -p "$$(dirname $@)"
-	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ)  -o $@
+	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) $(EXTRA_DEPS) -o $@
 
 # Compilation rules for *.c files.
 obj/%.c.o: src/%.c GNUmakefile

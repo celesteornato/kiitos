@@ -1,5 +1,6 @@
 union color {
   struct {
+    unsigned char a;
     unsigned char b;
     unsigned char g;
     unsigned char r;
@@ -7,6 +8,6 @@ union color {
   unsigned int value;
 };
 
-#define RED 0xff0000 
-#define GREEN 0x00ff00 
-#define BLUE 0x0000ff 
+#define RED 0xffff0000 
+#define GREEN 0xff00ff00 
+#define BLUE 0xff0000ff 

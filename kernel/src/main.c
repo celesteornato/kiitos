@@ -79,9 +79,7 @@ static void hcf(void) {
 }
 
 void cool_colors(struct limine_framebuffer *fb) {
-
   union color clr = {.value = RED};
-
   for (unsigned char g = 0; g < 0xff; ++g) {
     clr.rgb.g = g;
     color_fbuff(fb, clr.value);
@@ -94,7 +92,6 @@ void cool_colors(struct limine_framebuffer *fb) {
     clr.rgb.b = b;
     color_fbuff(fb, clr.value);
   }
-
   for (unsigned char g = 0xff; g > 0x0; --g) {
     clr.rgb.g = g;
     color_fbuff(fb, clr.value);
@@ -110,19 +107,17 @@ void cool_colors(struct limine_framebuffer *fb) {
 }
 
 void kmain(void) {
-  if (!LIMINE_BASE_REVISION_SUPPORTED) {
+  if (!LIMINE_BASE_REVISION_SUPPORTED)
     hcf();
-  }
 
-  // Ensure we got a framebuffer.
   if (framebuffer_request.response == NULL ||
-      framebuffer_request.response->framebuffer_count < 1) {
+      framebuffer_request.response->framebuffer_count < 1)
     hcf();
-  }
 
   struct limine_framebuffer *framebuffer =
       framebuffer_request.response->framebuffers[0];
-  while (1)
-    cool_colors(framebuffer);
+
+  k_putchar('a', 0, 0, 0x000000, 0xffffff, framebuffer);
+
   hcf();
 }
