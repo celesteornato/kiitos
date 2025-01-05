@@ -66,6 +66,8 @@ int kexec(char *cmd) {
     return 1;
   else if (memcmp(cmd, "clear", 5 * sizeof(char)) == 0)
     return 3;
+  else if (memcmp(cmd, "rbot", 4 * sizeof(char)) == 0)
+    *(int*)(0x1) = 0xDeadbeef;
   else
     return 2;
 
