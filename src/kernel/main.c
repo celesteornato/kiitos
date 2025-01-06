@@ -1,6 +1,7 @@
 #include "../libc/kiitklib.h"
 #include "../limine.h"
 #include "../userland/shell.h"
+#include "gdt.h"
 #include "kiitkio.h"
 #include <stddef.h>
 
@@ -33,9 +34,13 @@ void kmain(void) {
       framebuffer_request.response->framebuffers[0];
 
   __asm__("cli");
+
+
   kcolor_fbuff(framebuffer, 0x000000);
+  struct out err1 = out_new(framebuffer);
   struct out otp1 = out_new(framebuffer);
   otp1.fg = 0xffff00;
+  err1.fg = 0xff0000;
   prints("Welcome to KiitOS\n\tVersion: ", &otp1);
   otp1.fg = 0x00ff00;
   otp1.bg = 0xff00ff;
@@ -44,9 +49,13 @@ void kmain(void) {
   otp1.fg = 0xffffff;
   otp1.bg = 0x000000;
 
-  struct out err1 = out_new(framebuffer);
-  err1.fg = 0xff0000;
+  prints("Loading gdt...", &otp1);
+  load_gdt();
+  prints("\r[FINISHED] Loading gdt\n", &otp1);
+
+  prints("Dropping into shell...\n", &otp1);
   drop_into_shell(&otp1, &err1);
+  prints("Shell exited!\n", &otp1);
 
   halt_and_catch_fire();
 }

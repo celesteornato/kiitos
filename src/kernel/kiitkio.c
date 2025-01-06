@@ -4,25 +4,20 @@
 
 static struct PSF_font *default_font = &_binary_powerline_font_psf_start;
 
-inline uint8_t inb(uint16_t port) {
+uint8_t inb(uint16_t port) {
   uint8_t ret;
   __asm__ volatile("inb %w1, %b0" : "=a"(ret) : "Nd"(port) : "memory");
   return ret;
 }
 
-inline void outb(uint16_t port, uint8_t val) {
+void outb(uint16_t port, uint8_t val) {
   __asm__ volatile("outb %b0, %w1" : : "a"(val), "Nd"(port) : "memory");
-  return;
 }
 
-void k_setfont(struct PSF_font* font)
-{
-  default_font = font;
-}
-struct PSF_font* k_getfont(void)
-{
-  return default_font;
-}
+void io_wait(void) { outb(0x80, 0); }
+
+void k_setfont(struct PSF_font *font) { default_font = font; }
+struct PSF_font *k_getfont(void) { return default_font; }
 
 void k_putc(unsigned short int c, int start_x, int start_y, uint32_t fg,
             uint32_t bg, struct limine_framebuffer *fb) {
@@ -55,9 +50,9 @@ void k_puts(char *string, uint32_t start_x, uint32_t start_y, uint32_t fg,
   uint32_t y = start_y;
   size_t ind = 0;
   while (string[ind] != 0) {
-    if (y > fb->height/default_font->height)
+    if (y > fb->height / default_font->height)
       return;
-    if (string[ind] == '\n' || x > fb->width/default_font->width) {
+    if (string[ind] == '\n' || x > fb->width / default_font->width) {
       x = 0;
       y += 1;
       if (string[ind] == '\n')

@@ -24,6 +24,8 @@ char handle_special_char(char c, struct out *otp) {
   }
   case '\b': {
     --otp->cursor.x;
+    printc(' ', otp);
+    --otp->cursor.x;
     break;
   }
   case '\t': {
@@ -69,6 +71,11 @@ void printd(long num, struct out *otp) {
     printd(num / 10, otp);
   printc((num % 10) + '0', otp);
 }
+void printb(long num, struct out *otp) {
+  if (num > 1)
+    printb(num / 2, otp);
+  printc((num % 2) + '0', otp);
+}
 
 struct out out_new(struct limine_framebuffer *fb) {
   return (struct out){
@@ -83,3 +90,34 @@ struct out out_new(struct limine_framebuffer *fb) {
 unsigned char get_kb_key(void) { return KB_LOOKUP[inb(0x60)]; }
 unsigned char get_kb_raw(void) { return inb(0x60); }
 unsigned char kb_raw_to_key(unsigned char c) { return KB_LOOKUP[c]; }
+
+void gets(struct out *otp, char buffer[], uint64_t buff_size) {
+  unsigned char key, sc, abs_sc;
+  unsigned long buffer_index = 0;
+  while (1) {
+    if (buffer_index >= buff_size)
+      return;
+    sc = get_kb_raw();
+    abs_sc = sc & ~128;
+    key = kb_raw_to_key(abs_sc);
+
+    if (key == 0)
+      continue;
+
+    if (sc == abs_sc && pressed_keys[abs_sc] == 0) {
+      pressed_keys[abs_sc] = 1;
+      if (sc == 0x1C)
+        return;
+
+      printc(key, otp);
+      if (key == '\b') {
+        --buffer_index;
+        continue;
+      }
+      buffer[buffer_index++] = key;
+      continue;
+    }
+    if (sc != abs_sc)
+      pressed_keys[abs_sc] = 0;
+  }
+}
