@@ -60,17 +60,17 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 int kexec(char *cmd) {
   if (cmd[0] == 0)
     return 0;
-  if (memcmp(cmd, "setfont1", 8 * sizeof(char)) == 0) {
+  if (memcmp(cmd, "setfont1", 9 * sizeof(char)) == 0) {
     k_setfont(&_binary_Solarize_12x29_psf_start);
     return 1;
-  } else if (memcmp(cmd, "setfont0", 8 * sizeof(char)) == 0) {
+  } else if (memcmp(cmd, "setfont0", 9 * sizeof(char)) == 0) {
     k_setfont(&_binary_powerline_font_psf_start);
     return 2;
   } else if (memcmp(cmd, "ls", 2 * sizeof(char)) == 0) {
     return 3;
-  } else if (memcmp(cmd, "clear", 5 * sizeof(char)) == 0) {
+  } else if (memcmp(cmd, "clear", 6 * sizeof(char)) == 0) {
     return 4;
-  } else if (memcmp(cmd, "rbot", 4 * sizeof(char)) == 0) {
+  } else if (memcmp(cmd, "reboot", 7 * sizeof(char)) == 0) {
     *(long*)(0x1)=0xDeadBeef;
     return 5;
   }
