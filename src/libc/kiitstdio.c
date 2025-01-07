@@ -1,5 +1,6 @@
 #include "kiitstdio.h"
 #include "../kernel/kiitkio.h"
+#include "../libc/kiitklib.h"
 #include <stddef.h>
 
 #define PIXEL uint32_t
@@ -10,6 +11,8 @@ static const char KB_LOOKUP[255] = {
     0,    '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',', '.', '/', 0,    '*',
     0,    ' ',  0,   0,   0,   0,   0,   0,   0,   0,   0,   0,   0,    0,
     0,    '7',  '8', '9', '-', '4', '5', '6', '+', '1', '2', '3', '0',  '.'};
+
+static char pressed_keys[256] = {0};
 
 char handle_special_char(char c, struct out *otp) {
   switch (c) {
@@ -94,6 +97,7 @@ unsigned char kb_raw_to_key(unsigned char c) { return KB_LOOKUP[c]; }
 void gets(struct out *otp, char buffer[], uint64_t buff_size) {
   unsigned char key, sc, abs_sc;
   unsigned long buffer_index = 0;
+  memset(buffer, 0, buff_size);
   while (1) {
     if (buffer_index >= buff_size)
       return;

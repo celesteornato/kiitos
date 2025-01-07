@@ -28,8 +28,6 @@ union key_press {
   uint64_t full: 48;
 };
 
-static unsigned char pressed_keys[256] = {0};
-
 void kcolor_fbuff(struct limine_framebuffer *framebuffer, uint32_t color);
 
 void k_putc(unsigned short int unicodecharacter, int start_x, int start_y,

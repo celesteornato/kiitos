@@ -2,6 +2,7 @@
 #include "../limine.h"
 #include "../userland/shell.h"
 #include "gdt.h"
+#include "idt.h"
 #include "kiitkio.h"
 #include <stddef.h>
 
@@ -33,12 +34,10 @@ void kmain(void) {
   struct limine_framebuffer *framebuffer =
       framebuffer_request.response->framebuffers[0];
 
-  __asm__("cli");
-
-
   kcolor_fbuff(framebuffer, 0x000000);
   struct out err1 = out_new(framebuffer);
   struct out otp1 = out_new(framebuffer);
+  global_out = out_new(framebuffer);
   otp1.fg = 0xffff00;
   err1.fg = 0xff0000;
   prints("Welcome to KiitOS\n\tVersion: ", &otp1);
@@ -50,8 +49,13 @@ void kmain(void) {
   otp1.bg = 0x000000;
 
   prints("Loading gdt...", &otp1);
-  load_gdt();
+  gdt_install();
   prints("\r[FINISHED] Loading gdt\n", &otp1);
+  halt_and_catch_fire();
+
+  prints("Loading idt...", &otp1);
+  load_idt(); //load_idt calls __asm__("sti")
+  prints("\r[FINISHED] Loading idt\n", &otp1);
 
   prints("Dropping into shell...\n", &otp1);
   drop_into_shell(&otp1, &err1);

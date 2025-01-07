@@ -1,9 +1,11 @@
 #include "kiitklib.h"
 #include "../kernel/kiitkio.h"
-__attribute__((noreturn)) void halt_and_catch_fire(void) {
-  __asm__("cli");
+#include "../libc/kiitstdio.h"
+void halt_and_catch_fire() {
+  // prints("h", &global_out);
+  __asm__ volatile("cli; hlt");
   while (1)
-    __asm__("hlt");
+    ;
 }
 
 void *memcpy(void *dest, const void *src, size_t n) {
@@ -60,10 +62,10 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 int kexec(char *cmd) {
   if (cmd[0] == 0)
     return 0;
-  if (memcmp(cmd, "setfont1", 9 * sizeof(char)) == 0) {
+  if (memcmp(cmd, "setfont 1", 10 * sizeof(char)) == 0) {
     k_setfont(&_binary_Solarize_12x29_psf_start);
     return 1;
-  } else if (memcmp(cmd, "setfont0", 9 * sizeof(char)) == 0) {
+  } else if (memcmp(cmd, "setfont 0", 10 * sizeof(char)) == 0) {
     k_setfont(&_binary_powerline_font_psf_start);
     return 2;
   } else if (memcmp(cmd, "ls", 2 * sizeof(char)) == 0) {
@@ -71,8 +73,12 @@ int kexec(char *cmd) {
   } else if (memcmp(cmd, "clear", 6 * sizeof(char)) == 0) {
     return 4;
   } else if (memcmp(cmd, "reboot", 7 * sizeof(char)) == 0) {
-    *(long*)(0x1)=0xDeadBeef;
+    volatile char a = 0;
+    volatile char b = 5;
+    b /= a;
     return 5;
+  } else if (memcmp(cmd, "getinfo 0", 8 * sizeof(char)) == 0) {
+    return 7;
   }
   return 6;
 }

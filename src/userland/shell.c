@@ -1,9 +1,10 @@
 #include "shell.h"
 #include "../kernel/kiitkio.h"
 #include "../libc/kiitklib.h"
-#include "stdint.h"
 
-static unsigned char buffer[2048] = {0};
+#define SHELL_BUFF_SIZE 2048
+
+static unsigned char buffer[SHELL_BUFF_SIZE] = {0};
 
 static char *err_codes[] = {
     "",
@@ -15,11 +16,11 @@ static char *err_codes[] = {
     "Command not found!",
 };
 
-void ask_cmd(struct out *otp) {
+static void ask_cmd(struct out *otp) {
   otp->fg = 0xffff00;
   prints("\n<< ", otp);
   otp->fg = 0xffffff;
-  gets(otp, (char *)buffer, 2048);
+  gets(otp, (char *)buffer, SHELL_BUFF_SIZE);
   otp->fg = 0x00ff00;
   prints("\n>> ", otp);
   uint64_t err = kexec((char *)buffer);
@@ -27,12 +28,18 @@ void ask_cmd(struct out *otp) {
   otp->fg = 0xffffff;
 }
 
+extern void* isr_stub_table[];
 int drop_into_shell(struct out *output, struct out *err) {
-  prints("Have not crashed going into userland!\n", output);
-
+  prints("Welcome to userland!\n", output);
   while (1) {
     ask_cmd(output);
-    memset(buffer, 0, 2048 * sizeof(char));
+    memset(buffer, 0, SHELL_BUFF_SIZE * sizeof(char));
+  }
+
+  while(1)
+  {
+    printd((uint64_t)isr_stub_table[2],err);
+    printc('\n',err);
   }
 
   return 0;

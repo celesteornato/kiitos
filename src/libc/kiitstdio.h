@@ -1,7 +1,5 @@
 #include <stdint.h>
-/*
-  made to work with Limine Revision 3 Framebuffers as a drop-in
-*/
+
 struct out {
   struct {
     unsigned char x;
@@ -15,6 +13,8 @@ struct out {
   uint32_t fg;
   uint32_t bg;
 };
+
+static struct out global_out;
 
 void printc(char c, struct out*);
 void printd(long num, struct out*);

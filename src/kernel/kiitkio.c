@@ -2,6 +2,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+
+
 static struct PSF_font *default_font = &_binary_powerline_font_psf_start;
 
 uint8_t inb(uint16_t port) {
