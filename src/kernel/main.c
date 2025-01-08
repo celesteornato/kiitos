@@ -2,6 +2,7 @@
 #include "../limine.h"
 #include "../userland/shell.h"
 #include "gdt.h"
+#include "idt.h"
 #include "kiitkio.h"
 #include <stddef.h>
 
@@ -50,6 +51,10 @@ void kmain(void) {
   prints("Loading gdt...", &otp1);
   gdt_install();
   prints("\r[FINISHED] Loading gdt\n", &otp1);
+
+  prints("Loading idt...", &otp1);
+  idt_init();
+  prints("\r[FINISHED] Loading idt\n", &otp1);
 
   prints("Dropping into shell...\n", &otp1);
   drop_into_shell(&otp1, &err1);

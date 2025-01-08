@@ -2,9 +2,15 @@
 #include "../kernel/kiitkio.h"
 #include "../libc/kiitstdio.h"
 void halt_and_catch_fire() {
-  // prints("h", &global_out);
   __asm__ volatile("cli; hlt");
   while (1)
+    ;
+}
+
+__attribute__((noreturn))
+void exception_handler() {
+    __asm__ volatile ("cli; hlt"); // Completely hangs the computer
+    while (1)
     ;
 }
 
