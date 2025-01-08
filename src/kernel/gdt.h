@@ -15,6 +15,7 @@ struct gdt_descriptor {
   uint64_t base;
 } __attribute__((packed));
 
-extern void load_gdt(struct gdt_descriptor *gdtr);
+extern void load_gdt(uint16_t limit, uint64_t base);
+// extern void load_gdt(struct gdt_descriptor* gdtr);
 extern void reload_segments(void);
 void gdt_install(void);

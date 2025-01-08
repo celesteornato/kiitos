@@ -1,12 +1,12 @@
 #include "gdt.h"
 #include <stdint.h>
 
-#define GDT_SIZE 5
+#define GDT_SIZE 7
 
 struct segment_descriptor gdt[GDT_SIZE];
 struct gdt_descriptor gdtr;
 
-void gdt_set_descriptor(int num, unsigned long base, unsigned long limit, unsigned char access, unsigned char gran)
+void gdt_set_descriptor(int num, uint64_t base, uint64_t limit, uint8_t access, uint8_t gran)
 {
     gdt[num].base_low = (base & 0xFFFF);
     gdt[num].base_middle = (base >> 16) & 0xFF;
@@ -19,18 +19,31 @@ void gdt_set_descriptor(int num, unsigned long base, unsigned long limit, unsign
     gdt[num].access = access;
 }
 
-
 void gdt_install()
 {
+
+    // We need to match Limine's first  7 descriptors
+    gdt_set_descriptor(0, 0, 0, 0, 0); // null desc
+
+    // 16 bit code and data
+    gdt_set_descriptor(1, 0, 0xFFFF, 0b10011011, 0b1000);
+    gdt_set_descriptor(2, 0, 0xFFFF, 0b10010111, 0b1000);
+
+    // 32 bit code and data
+    gdt_set_descriptor(3, 0, 0xFFFFFFFF, 0b10011011, 0b1100);
+    gdt_set_descriptor(4, 0, 0xFFFFFFFF, 0b10010111, 0b1100);
+
+    // 64 bit code and data
+    gdt_set_descriptor(5, 0, 0x0, 0b10011011, 0b1010);
+    gdt_set_descriptor(6, 0, 0x0, 0b10010111, 0b1000);
+    
+
     gdtr = (struct gdt_descriptor){
-        .limit = sizeof(gdt)-1,
+        .limit = (sizeof(struct segment_descriptor)*GDT_SIZE)-1,
         .base = (uint64_t)gdt,
     };
 
-    gdt_set_descriptor(0, 0, 0, 0, 0);
-    gdt_set_descriptor(1, 0, 0xFFFFF, 0x9A, 0xA);
-    gdt_set_descriptor(2, 0, 0xFFFFF, 0x92, 0xC);
-    load_gdt(&gdtr);
+    load_gdt(gdtr.limit, gdtr.base);
     reload_segments();
 }
 		

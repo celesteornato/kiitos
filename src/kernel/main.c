@@ -2,7 +2,6 @@
 #include "../limine.h"
 #include "../userland/shell.h"
 #include "gdt.h"
-#include "idt.h"
 #include "kiitkio.h"
 #include <stddef.h>
 
@@ -52,10 +51,6 @@ void kmain(void) {
   gdt_install();
   prints("\r[FINISHED] Loading gdt\n", &otp1);
   halt_and_catch_fire();
-
-  prints("Loading idt...", &otp1);
-  load_idt(); //load_idt calls __asm__("sti")
-  prints("\r[FINISHED] Loading idt\n", &otp1);
 
   prints("Dropping into shell...\n", &otp1);
   drop_into_shell(&otp1, &err1);
