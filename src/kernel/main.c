@@ -41,7 +41,7 @@ void kmain(void) {
   err1.fg = 0xff0000;
   prints("Welcome to KiitOS\n\tVersion: ", &otp1);
   otp1.fg = 0x00ff00;
-  otp1.bg = 0xff00ff;
+  otp1.bg = 0x330033;
   prints(KIITOS_VERSION, &otp1);
   printc('\n', &otp1);
   otp1.fg = 0xffffff;
@@ -50,7 +50,6 @@ void kmain(void) {
   prints("Loading gdt...", &otp1);
   gdt_install();
   prints("\r[FINISHED] Loading gdt\n", &otp1);
-  halt_and_catch_fire();
 
   prints("Dropping into shell...\n", &otp1);
   drop_into_shell(&otp1, &err1);

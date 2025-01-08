@@ -15,13 +15,13 @@ load_gdt:
    RET
 reload_segments:
     ; Reload CS register:
-    push 0X28                
+    push 0x08                
     lea rax, [rel .reload_CS]
     push rax                 
     retfq                    
 .reload_CS:
     ; Reload data segment registers
-    mov   ax, 0x30
+    mov   ax, 0x10
     mov   ds, ax
     mov   es, ax
     mov   fs, ax
