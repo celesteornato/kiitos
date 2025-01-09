@@ -1,17 +1,32 @@
 #include "kiitklib.h"
 #include "../kernel/kiitkio.h"
 #include "../libc/kiitstdio.h"
-void halt_and_catch_fire() {
+__attribute__((noreturn)) void halt_and_catch_fire() {
   __asm__ volatile("cli; hlt");
   while (1)
     ;
 }
 
-__attribute__((noreturn))
-void exception_handler() {
-    __asm__ volatile ("cli; hlt"); // Completely hangs the computer
-    while (1)
+__attribute__((noreturn)) void exception_handler() {
+  __asm__ volatile("cli; hlt"); // Completely hangs the computer
+  while (1)
     ;
+}
+
+void reboot() {
+  uint8_t temp;
+
+  asm volatile("cli");
+
+  do {
+    temp = inb(0x64);
+    if ((temp & 1) != 0)
+      inb(0x60);
+  } while ((temp & 2) != 0);
+
+  outb(0x64, 0xFE); /* pulse CPU reset line */
+  while (1)
+    asm volatile("hlt");
 }
 
 void *memcpy(void *dest, const void *src, size_t n) {
@@ -79,10 +94,8 @@ int kexec(char *cmd) {
   } else if (memcmp(cmd, "clear", 6 * sizeof(char)) == 0) {
     return 4;
   } else if (memcmp(cmd, "reboot", 7 * sizeof(char)) == 0) {
-    volatile char a = 0;
-    volatile char b = 5;
-    b /= a;
-    return 5;
+    reboot();
+    return -1;
   } else if (memcmp(cmd, "getinfo 0", 8 * sizeof(char)) == 0) {
     return 7;
   }

@@ -3,4 +3,5 @@ iso_root
 *.iso
 limine/
 obj/
+log.log
 

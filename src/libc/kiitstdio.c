@@ -114,11 +114,10 @@ void gets(struct out *otp, char buffer[], uint64_t buff_size) {
         return;
 
       printc(key, otp);
-      if (key == '\b') {
+      if (key == '\b')
         --buffer_index;
-        continue;
-      }
-      buffer[buffer_index++] = key;
+      else
+        buffer[buffer_index++] = key;
       continue;
     }
     if (sc != abs_sc)
