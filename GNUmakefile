@@ -79,8 +79,8 @@ override SRCFILES := $(shell cd src && find -L * -type f | LC_ALL=C sort)
 override CFILES := $(filter %.c,$(SRCFILES))
 override ASFILES := $(filter %.S,$(SRCFILES))
 override NASMFILES := $(filter %.asm,$(SRCFILES))
-override OBJ := $(addprefix obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o))
-override HEADER_DEPS := $(addprefix obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
+override OBJ := $(addprefix build/obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILES:.asm=.asm.o))
+override HEADER_DEPS := $(addprefix build/obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
 EXTRA_DEPS=src/assets_compiled/*
 
 .PHONY: all
@@ -94,30 +94,30 @@ bin/$(OUTPUT): GNUmakefile src/linker.ld $(OBJ)
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) $(EXTRA_DEPS) -o $@
 
 # Compilation rules for *.c files.
-obj/%.c.o: src/%.c GNUmakefile
+build/obj/%.c.o: src/%.c GNUmakefile
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Compilation rules for *.S files.
-obj/%.S.o: src/%.S GNUmakefile
+build/obj/%.S.o: src/%.S GNUmakefile
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(CPPFLAGS) -c $< -o $@
 
 # Compilation rules for *.asm (nasm) files.
-obj/%.asm.o: src/%.asm GNUmakefile
+build/obj/%.asm.o: src/%.asm GNUmakefile
 	mkdir -p "$$(dirname $@)"
 	nasm $(NASMFLAGS) $< -o $@
 
 .PHONY: clean iso run
 clean:
-	rm -rf bin obj build/iso_root
+	rm -rf bin build/obj build/iso_root
 
-iso: clean bin/kiitos.iso
+iso: clean bin/$(OUTPUT).iso
 
-bin/kiitos.iso: bin/$(OUTPUT) limine/
+bin/$(OUTPUT).iso: bin/$(OUTPUT) limine/
 	mkdir -p build/iso_root
 	mkdir -p build/iso_root/boot
-	cp -v bin/kiitos build/iso_root/boot/
+	cp -v bin/$(OUTPUT) build/iso_root/boot/
 	mkdir -p build/iso_root/boot/limine
 	cp -v src/limine.conf limine/limine-bios.sys limine/limine-bios-cd.bin \
       	limine/limine-uefi-cd.bin build/iso_root/boot/limine/
@@ -128,13 +128,13 @@ bin/kiitos.iso: bin/$(OUTPUT) limine/
         	-no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
         	-apm-block-size 2048 --efi-boot boot/limine/limine-uefi-cd.bin \
         	-efi-boot-part --efi-boot-image --protective-msdos-label \
-        	build/iso_root -o bin/kiitos.iso
-	./limine/limine bios-install bin/kiitos.iso
+        	build/iso_root -o bin/$(OUTPUT).iso
+	./limine/limine bios-install bin/$(OUTPUT).iso
 
 limine/:
 	git clone https://github.com/limine-bootloader/limine.git --branch=v8.x-binary --depth=1
 	make -C limine
 
 
-run: bin/kiitos.iso 
-	qemu-system-x86_64 -D logs/qemu.log -d int,cpu_reset -M smm=off -no-reboot  -drive format=raw,file=bin/kiitos.iso
+run: bin/$(OUTPUT).iso 
+	qemu-system-x86_64 -D logs/qemu.log -d int,cpu_reset -M smm=off -no-reboot  -drive format=raw,file=bin/$(OUTPUT).iso
