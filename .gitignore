@@ -1,7 +1,6 @@
 bin/
-iso_root
+iso_root/
 *.iso
 limine/
 obj/
-log.log
-
+logs/*

@@ -71,7 +71,7 @@ override LDFLAGS += \
     -nostdlib \
     -static \
     -z max-page-size=0x1000 \
-    -T linker.ld
+    -T src/linker.ld
 
 # Use "find" to glob all *.c, *.S, and *.asm files in the tree and obtain the
 # object and header dependency file names.
@@ -89,7 +89,7 @@ all: bin/$(OUTPUT)
 -include $(HEADER_DEPS)
 
 # Link rules for the final executable.
-bin/$(OUTPUT): GNUmakefile linker.ld $(OBJ)
+bin/$(OUTPUT): GNUmakefile src/linker.ld $(OBJ)
 	mkdir -p "$$(dirname $@)"
 	$(CC) $(CFLAGS) $(LDFLAGS) $(OBJ) $(EXTRA_DEPS) -o $@
 
@@ -137,4 +137,4 @@ limine/:
 
 
 run: bin/kiitos.iso 
-	qemu-system-x86_64 -D log.log -d int,cpu_reset -M smm=off -no-reboot  -drive format=raw,file=bin/kiitos.iso
+	qemu-system-x86_64 -D logs/qemu.log -d int,cpu_reset -M smm=off -no-reboot  -drive format=raw,file=bin/kiitos.iso
