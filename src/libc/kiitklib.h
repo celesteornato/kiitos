@@ -1,4 +1,3 @@
-#include <stdint.h>
 #include <stddef.h>
 __attribute__((noreturn))
 void halt_and_catch_fire(void);

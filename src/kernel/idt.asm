@@ -8,6 +8,10 @@ isr_stub_%+%1:
     call exception_handler
     iretq
 %endmacro
+%macro unimplemented 1
+irq_%+%1:
+    iretq
+%endmacro
 
 extern exception_handler
 isr_no_err_stub 0
@@ -43,11 +47,23 @@ isr_no_err_stub 29
 isr_err_stub    30
 isr_no_err_stub 31
 
+unimplemented 32 
+extern kb_interrupt
+irq_33:
+    call kb_interrupt
+    iretq
 
 global isr_stub_table
+
 isr_stub_table:
 %assign i 0 
 %rep    32 
     dq isr_stub_%+i
+%assign i i+1 
+%endrep
+
+%assign j 32 
+%rep    2 
+    dq irq_%+i
 %assign i i+1 
 %endrep

@@ -90,6 +90,11 @@ struct out out_new(struct limine_framebuffer *fb) {
   };
 }
 
+void set_global_out(struct limine_framebuffer *fb)
+{
+  global_out = out_new(fb);
+}
+
 unsigned char get_kb_key(void) { return KB_LOOKUP[inb(0x60)]; }
 unsigned char get_kb_raw(void) { return inb(0x60); }
 unsigned char kb_raw_to_key(unsigned char c) { return KB_LOOKUP[c]; }

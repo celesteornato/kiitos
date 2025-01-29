@@ -1,11 +1,28 @@
+#include <stdint.h>
 #include "idt.h"
 
 #define IDT_MAX_SIZE 256
-#define IDT_SIZE 32
+#define IDT_SIZE 34
 #define KERNEL_C_OFFSET 0x08
 
 static char vectors[IDT_MAX_SIZE];
 extern void *isr_stub_table[];
+
+struct interrupt_descriptor {
+  uint16_t isr_low;         // 0 - 15
+  uint16_t kernel_cs;       // 16 - 31
+  uint8_t ist : 3;          // 32 - 34
+  uint8_t reserved_low : 5; // 35 - 39
+  uint8_t attributes;       // 40 - 47
+  uint16_t isr_mid;         // 48 - 63
+  uint32_t isr_high;        // 64 - 95
+  uint32_t reserved_high;   // 96 - 127
+} __attribute__((packed));
+
+struct idtr {
+  uint16_t limit;
+  uint64_t base;
+} __attribute__((packed));
 
 static struct idtr g_idtr;
 __attribute__((
@@ -25,7 +42,7 @@ void idt_set_descriptor(uint8_t vector, void *isr, uint8_t flags) {
   };
 }
 
-void idt_init() {
+void idt_init(void) {
   g_idtr.base = (uintptr_t)&g_idt[0];
   g_idtr.limit =
       (uint16_t)sizeof(struct interrupt_descriptor) * IDT_MAX_SIZE - 1;
@@ -38,3 +55,4 @@ void idt_init() {
   __asm__ volatile("lidt %0" : : "m"(g_idtr)); // load the new IDT
   __asm__ volatile("sti");                     // set the interrupt flag
 }
+

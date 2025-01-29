@@ -32,9 +32,12 @@ endif
 
 # Internal C flags that should not be changed by the user.
 override CFLAGS += \
+    -std=gnu17 \
     -Wall \
     -Wextra \
-    -std=gnu11 \
+    -Wpedantic \
+    -Wunused \
+    -Wunused-result \
     -ffreestanding \
     -fno-stack-protector \
     -fno-stack-check \
@@ -59,7 +62,7 @@ override CPPFLAGS := \
 # Internal nasm flags that should not be changed by the user.
 override NASMFLAGS += \
     -Wall \
-    -f elf64
+    -felf64
 
 # Internal linker flags that should not be changed by the user.
 override LDFLAGS += \
@@ -80,11 +83,9 @@ override OBJ := $(addprefix obj/,$(CFILES:.c=.c.o) $(ASFILES:.S=.S.o) $(NASMFILE
 override HEADER_DEPS := $(addprefix obj/,$(CFILES:.c=.c.d) $(ASFILES:.S=.S.d))
 EXTRA_DEPS=src/assets_compiled/*
 
-# Default target. This must come first, before header dependencies.
 .PHONY: all
 all: bin/$(OUTPUT)
 
-# Include header dependencies.
 -include $(HEADER_DEPS)
 
 # Link rules for the final executable.
@@ -107,7 +108,33 @@ obj/%.asm.o: src/%.asm GNUmakefile
 	mkdir -p "$$(dirname $@)"
 	nasm $(NASMFLAGS) $< -o $@
 
-# Remove object files and the final executable.
-.PHONY: clean
+.PHONY: clean iso run
 clean:
-	rm -rf bin obj
+	rm -rf bin obj iso_root
+
+iso: clean bin/kiitos.iso
+
+bin/kiitos.iso: bin/$(OUTPUT) limine/
+	mkdir -p iso_root
+	mkdir -p iso_root/boot
+	cp -v bin/kiitos iso_root/boot/
+	mkdir -p iso_root/boot/limine
+	cp -v src/limine.conf limine/limine-bios.sys limine/limine-bios-cd.bin \
+      	limine/limine-uefi-cd.bin iso_root/boot/limine/
+	mkdir -p iso_root/EFI/BOOT
+	cp -v limine/BOOTX64.EFI iso_root/EFI/BOOT/
+	cp -v limine/BOOTIA32.EFI iso_root/EFI/BOOT/
+	xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin \
+        	-no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
+        	-apm-block-size 2048 --efi-boot boot/limine/limine-uefi-cd.bin \
+        	-efi-boot-part --efi-boot-image --protective-msdos-label \
+        	iso_root -o bin/kiitos.iso
+	./limine/limine bios-install bin/kiitos.iso
+
+limine/:
+	git clone https://github.com/limine-bootloader/limine.git --branch=v8.x-binary --depth=1
+	make -C limine
+
+
+run: bin/kiitos.iso 
+	qemu-system-x86_64 -D log.log -d int,cpu_reset -M smm=off -no-reboot  -drive format=raw,file=bin/kiitos.iso

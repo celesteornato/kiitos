@@ -7,7 +7,7 @@
 ** Requires Nix to build
 #+begin_src bash
   # In Kiitos/
-  nix-shell ./gcc.nix
+  nix-shell ./build-dependencies.nix
   cd kernel
-  make
+  make [iso, bin]
 #+end_src

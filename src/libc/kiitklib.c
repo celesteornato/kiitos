@@ -1,22 +1,23 @@
 #include "kiitklib.h"
 #include "../kernel/kiitkio.h"
 #include "../libc/kiitstdio.h"
-__attribute__((noreturn)) void halt_and_catch_fire() {
+
+__attribute__((noreturn)) void halt_and_catch_fire(void) {
   __asm__ volatile("cli; hlt");
   while (1)
     ;
 }
 
-__attribute__((noreturn)) void exception_handler() {
+__attribute__((noreturn)) void exception_handler(void) {
   __asm__ volatile("cli; hlt"); // Completely hangs the computer
   while (1)
     ;
 }
 
-void reboot() {
+void reboot(void) {
   uint8_t temp;
 
-  asm volatile("cli");
+  __asm__ volatile("cli");
 
   do {
     temp = inb(0x64);
@@ -25,17 +26,17 @@ void reboot() {
   } while ((temp & 2) != 0);
 
   outb(0x64, 0xFE); /* pulse CPU reset line */
+  __asm__ volatile("hlt");
   while (1)
-    asm volatile("hlt");
+    ;
 }
 
 void *memcpy(void *dest, const void *src, size_t n) {
   uint8_t *pdest = (uint8_t *)dest;
   const uint8_t *psrc = (const uint8_t *)src;
 
-  for (size_t i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; ++i)
     pdest[i] = psrc[i];
-  }
 
   return dest;
 }
@@ -43,9 +44,8 @@ void *memcpy(void *dest, const void *src, size_t n) {
 void *memset(void *s, int c, size_t n) {
   uint8_t *p = (uint8_t *)s;
 
-  for (size_t i = 0; i < n; i++) {
+  for (size_t i = 0; i < n; ++i)
     p[i] = (uint8_t)c;
-  }
 
   return s;
 }
@@ -55,13 +55,11 @@ void *memmove(void *dest, const void *src, size_t n) {
   const uint8_t *psrc = (const uint8_t *)src;
 
   if (src > dest) {
-    for (size_t i = 0; i < n; i++) {
+    for (size_t i = 0; i < n; ++i)
       pdest[i] = psrc[i];
-    }
   } else if (src < dest) {
-    for (size_t i = n; i > 0; i--) {
+    for (size_t i = n; i > 0; --i)
       pdest[i - 1] = psrc[i - 1];
-    }
   }
 
   return dest;
@@ -72,9 +70,8 @@ int memcmp(const void *s1, const void *s2, size_t n) {
   const uint8_t *p2 = (const uint8_t *)s2;
 
   for (size_t i = 0; i < n; i++) {
-    if (p1[i] != p2[i]) {
+    if (p1[i] != p2[i])
       return p1[i] < p2[i] ? -1 : 1;
-    }
   }
 
   return 0;
@@ -83,6 +80,7 @@ int memcmp(const void *s1, const void *s2, size_t n) {
 int kexec(char *cmd) {
   if (cmd[0] == 0)
     return 0;
+
   if (memcmp(cmd, "setfont 1", 10 * sizeof(char)) == 0) {
     k_setfont(&_binary_Solarize_12x29_psf_start);
     return 1;
