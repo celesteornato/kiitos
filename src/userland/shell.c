@@ -8,12 +8,14 @@ static unsigned char buffer[SHELL_BUFF_SIZE] = {0};
 
 static char *err_codes[] = {
     "",
-    "Changed font to 'Solarize'.",
+    "Bad Argument Count",
+    "Unrecognised Argument",
+    "Command not found!",
     "Changed font to 'Powerline'.",
+    "Changed font to 'Solarize'.",
     "No filesystem.",
     "\f",
     "Faulting...",
-    "Command not found!",
 };
 
 static void ask_cmd(struct out *otp) {

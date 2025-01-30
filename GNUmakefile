@@ -109,6 +109,7 @@ build/obj/%.asm.o: src/%.asm GNUmakefile
 	nasm $(NASMFLAGS) $< -o $@
 
 .PHONY: clean iso run
+
 clean:
 	rm -rf bin build/obj build/iso_root
 
@@ -125,7 +126,7 @@ bin/$(OUTPUT).iso: bin/$(OUTPUT) limine/
 	cp -v limine/BOOTX64.EFI build/iso_root/EFI/BOOT/
 	cp -v limine/BOOTIA32.EFI build/iso_root/EFI/BOOT/
 	xorriso -as mkisofs -R -r -J -b boot/limine/limine-bios-cd.bin \
-        	-no-emul-boot -boot-load-size 4 -boot-info-table -hfsplus \
+        	-no-emul-boot -boot-load-size 4 -boot-info-table \
         	-apm-block-size 2048 --efi-boot boot/limine/limine-uefi-cd.bin \
         	-efi-boot-part --efi-boot-image --protective-msdos-label \
         	build/iso_root -o bin/$(OUTPUT).iso
