@@ -117,7 +117,7 @@ int kexec(char *cmd)
             return 2;
         }
     }
-    if (memcmp(args[0], "ls", 2 * sizeof(char)) == 0) {
+    if (memcmp(args[0], "ls", 3 * sizeof(char)) == 0) {
         return 6;
     }
     if (memcmp(args[0], "clear", 6 * sizeof(char)) == 0) {
