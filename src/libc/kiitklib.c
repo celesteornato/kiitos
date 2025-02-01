@@ -2,6 +2,7 @@
 #include "../kernel/kiitkio.h"
 #include "../libc/kiitstdio.h"
 #include "../libc/string/string.h"
+#include <string.h>
 
 __attribute__((noreturn)) void halt_and_catch_fire(void)
 {
@@ -91,7 +92,7 @@ int kexec(char *cmd)
         return 0;
 
     char *args[10] = {0};
-    int argc = 0;
+    unsigned int argc = 0;
 
     char *save_ptr;
     char *token = strtok_r(cmd, " ", &save_ptr);
@@ -102,30 +103,23 @@ int kexec(char *cmd)
         token = strtok_r(NULL, " ", &save_ptr);
     }
 
-    if (memcmp(args[0], "setfont", 8 * sizeof(char)) == 0) {
+    if (strcmp(args[0], "setfont") == 0) {
         if (argc == 1)
             return 1;
-        switch (args[1][0]) {
-        case '0':
-            k_setfont(&_binary_powerline_font_psf_start);
+        if (args[1][0] - '0' > (int)(sizeof(PSF_DICT)/sizeof((PSF_DICT[0]))))
             return 4;
-        case '1':
-            k_setfont(&_binary_Solarize_12x29_psf_start);
-            return 5;
-        case 0:
-        default:
-            return 2;
-        }
+        k_setfont(PSF_DICT[args[1][0]-'0']);
+        return 1;
     }
-    if (memcmp(args[0], "ls", 3 * sizeof(char)) == 0) {
+    if (strcmp(args[0], "ls") == 0) {
+        return 5;
+    }
+    if (strcmp(args[0], "clear") == 0) {
         return 6;
     }
-    if (memcmp(args[0], "clear", 6 * sizeof(char)) == 0) {
-        return 7;
-    }
-    if (memcmp(args[0], "reboot", 7 * sizeof(char)) == 0) {
+    if (strcmp(args[0], "reboot") == 0) {
         reboot();
-        return 8;
+        return 7;
     }
     return 3;
 }

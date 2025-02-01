@@ -1,7 +1,6 @@
 #include "irq.h"
 #include "../libc/kiitstdio.h"
 #include "kiitkio.h"
-#include <string.h>
 
 #define IRQ_OFFSET 0x20
 

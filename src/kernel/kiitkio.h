@@ -1,18 +1,26 @@
 #include "../limine.h"
 struct PSF_font {
-  uint32_t magic;         /* magic bytes to identify PSF */
-  uint32_t version;       /* zero */
-  uint32_t headersize;    /* offset of bitmaps in file, 32 */
-  uint32_t flags;         /* 0 if there's no unicode table */
-  uint32_t numglyph;      /* number of glyphs */
-  uint32_t bytesperglyph; /* size of each glyph */
-  uint32_t height;        /* height in pixels */
-  uint32_t width;         /* width in pixels */
+    uint32_t magic;         /* magic bytes to identify PSF */
+    uint32_t version;       /* zero */
+    uint32_t headersize;    /* offset of bitmaps in file, 32 */
+    uint32_t flags;         /* 0 if there's no unicode table */
+    uint32_t numglyph;      /* number of glyphs */
+    uint32_t bytesperglyph; /* size of each glyph */
+    uint32_t height;        /* height in pixels */
+    uint32_t width;         /* width in pixels */
 };
 
-extern struct PSF_font _binary_Solarize_12x29_psf_start;
-extern struct PSF_font _binary_inconsolata_psf_start;
 extern struct PSF_font _binary_powerline_font_psf_start;
+extern struct PSF_font _binary_Solarize_12x29_psf_start;
+extern struct PSF_font _binary_ter_112n_psf_start;
+extern struct PSF_font _binary_inconsolata_psf_start;
+
+static struct PSF_font *const PSF_DICT[] = {
+    &_binary_powerline_font_psf_start,
+    &_binary_Solarize_12x29_psf_start,
+    &_binary_ter_112n_psf_start,
+    &_binary_inconsolata_psf_start,
+};
 
 void kcolor_fbuff(struct limine_framebuffer *framebuffer, uint32_t color);
 
