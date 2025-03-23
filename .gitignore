@@ -5,6 +5,6 @@
 *.bin
 *.swp
 *.log
-iso_root
 *~
 limine/
+iso_root/
