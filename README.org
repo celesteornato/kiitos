@@ -11,26 +11,26 @@ Good os anyways, Doom when
 * Dependencies
 ** Minimal requirements
 Do not use just that, please.
-*** A C compiler for x86_64-unknown-none
-*** An x86_64 assembler
++ A C compiler for x86_64-unknown-none
++ An x86_64 assembler
 ** Probably needed for the barebones
-*** clang
++ clang
 gcc could also work; though, as it doesn't support
 cross-compilation by default, one would need to tweak
 ~Makefile~. This would in any case still specifically require the
 x86_64-unknown-none gcc compiler.
-*** xorriso
-*** git
++ xorriso
++ git
 Only required for the first ever ~make~, so as to clone and
 build the limine bootloader. The limine repo will not get deleted
 on ~make clean~-ing.
-*** Some ~make~, either GNU or BSD
++ Some ~make~, either GNU or BSD
 Yes, I bothered making it compatible. Yes, it looks ugly.
 If you ask me the GNU syntax is uglier.
 ** Recommended
-*** clang
-*** xorriso
-*** git
-*** make
-*** qemu
-*** gdb
++ clang
++ xorriso
++ git
++ make
++ qemu
++ gdb
