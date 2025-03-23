@@ -1,37 +1,39 @@
 #ifndef INTERRUPTS_H_
 #define INTERRUPTS_H_
 
-__attribute__((interrupt)) void isr_stub0(void *arg);
-__attribute__((interrupt)) void isr_stub1(void *arg);
-__attribute__((interrupt)) void isr_stub2(void *arg);
-__attribute__((interrupt)) void isr_stub3(void *arg);
-__attribute__((interrupt)) void isr_stub4(void *arg);
-__attribute__((interrupt)) void isr_stub5(void *arg);
-__attribute__((interrupt)) void isr_stub6(void *arg);
-__attribute__((interrupt)) void isr_stub7(void *arg);
-__attribute__((interrupt)) void isr_stub8(void *arg);
-__attribute__((interrupt)) void isr_stub9(void *arg);
-__attribute__((interrupt)) void isr_stub10(void *arg);
-__attribute__((interrupt)) void isr_stub11(void *arg);
-__attribute__((interrupt)) void isr_stub12(void *arg);
-__attribute__((interrupt)) void isr_stub13(void *arg);
-__attribute__((interrupt)) void isr_stub14(void *arg);
-__attribute__((interrupt)) void isr_stub15(void *arg);
-__attribute__((interrupt)) void isr_stub16(void *arg);
-__attribute__((interrupt)) void isr_stub17(void *arg);
-__attribute__((interrupt)) void isr_stub18(void *arg);
-__attribute__((interrupt)) void isr_stub19(void *arg);
-__attribute__((interrupt)) void isr_stub20(void *arg);
-__attribute__((interrupt)) void isr_stub21(void *arg);
-__attribute__((interrupt)) void isr_stub22(void *arg);
-__attribute__((interrupt)) void isr_stub23(void *arg);
-__attribute__((interrupt)) void isr_stub24(void *arg);
-__attribute__((interrupt)) void isr_stub25(void *arg);
-__attribute__((interrupt)) void isr_stub26(void *arg);
-__attribute__((interrupt)) void isr_stub27(void *arg);
-__attribute__((interrupt)) void isr_stub28(void *arg);
-__attribute__((interrupt)) void isr_stub29(void *arg);
-__attribute__((interrupt)) void isr_stub30(void *arg);
-__attribute__((interrupt)) void isr_stub31(void *arg);
+#define ISR_STUB(n) __attribute__((interrupt)) void isr_stub##n(void *)
+
+ISR_STUB(0);
+ISR_STUB(1);
+ISR_STUB(2);
+ISR_STUB(3);
+ISR_STUB(4);
+ISR_STUB(5);
+ISR_STUB(6);
+ISR_STUB(7);
+ISR_STUB(8);
+ISR_STUB(9);
+ISR_STUB(10);
+ISR_STUB(11);
+ISR_STUB(12);
+ISR_STUB(13);
+ISR_STUB(14);
+ISR_STUB(15);
+ISR_STUB(16);
+ISR_STUB(17);
+ISR_STUB(18);
+ISR_STUB(19);
+ISR_STUB(20);
+ISR_STUB(21);
+ISR_STUB(22);
+ISR_STUB(23);
+ISR_STUB(24);
+ISR_STUB(25);
+ISR_STUB(26);
+ISR_STUB(27);
+ISR_STUB(28);
+ISR_STUB(29);
+ISR_STUB(30);
+ISR_STUB(31);
 
 #endif // INTERRUPTS_H_
