@@ -1,5 +1,5 @@
-.PHONY: all clean debug dbgrun run
-.SUFFIXES: .o .c .S .s .od
+.PHONY: all clean debug dbgrun run archi
+.SUFFIXES: .o .c .S .s .od .psf
 
 WARNS=\
     -Wall\
@@ -50,15 +50,17 @@ BUILDDIR=build
 EXENAME=kiitos2
 EXE=$(OUTDIR)/$(EXENAME)
 
-
 # BSD Make, GNU Make
-SRCS:=${:!find src -name '*.c'!}
+SRCS=${:!find src -name '*.c'!}
 SRCS+=$(wildcard src/*.c)
 SRCS+=$(wildcard src/*/*.c)
 
-ASMSRCS:=${:!find src -name '*.S'!}
+ASMSRCS=${:!find src -name '*.S'!}
 ASMSRCS+=$(wildcard src/*.S)
 ASMSRCS+=$(wildcard src/*/*.S)
+
+FONTSRCS=${:!find src -name '*.psf'!}
+FONTSRCS+=$(wildcard src/assets/*.psf)
 
 # BSD Make, GNU Make
 OBJ=${SRCS:S/.c/.o/g}
@@ -67,25 +69,28 @@ OBJ+=$(patsubst %.c,%.o,$(SRCS))
 OBJ+=${ASMSRCS:S/.S/.o/g}
 OBJ+=$(patsubst %.S,%.o,$(ASMSRCS))
 
+OBJ+=${FONTSRCS:S/.psf/.o/g}
+OBJ+=$(patsubst %.psf,%.o,$(FONTSRCS))
+
 OBJDBG=${SRCS:S/.c/.od/g}
 OBJDBG+=$(patsubst %.c,%.od,$(SRCS))
 
 OBJDBG+=${ASMSRCS:S/.S/.o/g}
 OBJDBG+=$(patsubst %.S,%.o,$(ASMSRCS))
 
-EXTRA=${:!find src/assets/ -name "*.o"!}
-EXTRA+=$(wildcard src/assets/*.o)
+OBJDBG+=${FONTSRCS:S/.psf/.o/g}
+OBJDBG+=$(patsubst %.psf,%.o,$(FONTSRCS))
 
 DBGFLAGS=$(CFLAGS) $(WARNS) -g -O0
 
-all: $(EXE)
-debug: $(EXE).dbg
+all: archi $(EXE)
+debug: archi $(EXE).dbg
 
 $(EXE): $(OBJ)
-	cc $(CFLAGS) -O2 $(LDFLAGS) $(WARNS) $(OBJ) $(EXTRA) -o $(EXE).bin
+	cc $(CFLAGS) -O2 $(LDFLAGS) $(WARNS) $(OBJ) -o $(EXE)
 
 $(EXE).dbg: $(OBJDBG)
-	cc $(DBGFLAGS) $(LDFLAGS) $(OBJDBG) $(EXTRA) -o $(EXE).dbg
+	cc $(DBGFLAGS) $(LDFLAGS) $(OBJDBG) -o $(EXE).dbg
 	rm -rf $(OBJDBG)
 
 .c.od:
@@ -96,6 +101,8 @@ $(EXE).dbg: $(OBJDBG)
 	cc -c $< -o $@
 .s.o:
 	cc -c $< -o $@
+.psf.o:
+	objcopy -O elf64-x86-64 -B i386 -I binary $< $@
 
 limine/limine:
 	git clone "https://github.com/limine-bootloader/limine.git" --branch=v9.x-binary --depth=1 limine
@@ -145,6 +152,9 @@ run: $(OUTDIR)/image.iso
 	qemu-system-x86_64 -D logs/qemu.log -d int,cpu_reset -M smm=off -no-reboot  -drive format=raw,file=$(OUTDIR)/image.iso
 dbgrun: $(OUTDIR)/imagedbg.iso
 	qemu-system-x86_64 -D logs/qemu.log -d int,cpu_reset -M smm=off -s -S -drive format=raw,file=$(OUTDIR)/imagedbg.iso
+
+archi:
+	mkdir -p bin logs
 
 clean:
 	rm -rf $(OUTDIR)/*

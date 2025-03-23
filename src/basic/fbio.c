@@ -17,8 +17,8 @@ struct PSF_font {
 #define FGERR (0xff1111)
 #define FGWR (0xff44ff)
 
-extern struct PSF_font _binary_terminus_psf_start;
-struct PSF_font *default_font = &_binary_terminus_psf_start;
+extern struct PSF_font _binary_src_assets_terminus_psf_start;
+struct PSF_font *default_font = &_binary_src_assets_terminus_psf_start;
 
 void k_putchar(char c, uint32_t *fb, size_t ppr, uint64_t x, uint64_t y) {
 
