@@ -82,8 +82,7 @@ all: $(EXE)
 debug: $(EXE).dbg
 
 $(EXE): $(OBJ)
-	cc $(CFLAGS) -O2 $(LDFLAGS) $(WARNS) $(OBJ) $(EXTRA) -o $(EXE)
-	rm -rf $(OBJ)
+	cc $(CFLAGS) -O2 $(LDFLAGS) $(WARNS) $(OBJ) $(EXTRA) -o $(EXE).bin
 
 $(EXE).dbg: $(OBJDBG)
 	cc $(DBGFLAGS) $(LDFLAGS) $(OBJDBG) $(EXTRA) -o $(EXE).dbg
