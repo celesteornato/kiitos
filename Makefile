@@ -50,7 +50,7 @@ OUTDIR=bin
 BUILDDIR=build
 EXENAME=kiitos2
 EXE=$(OUTDIR)/$(EXENAME)
-CC=gcc
+CC=cc
 
 # BSD Make, GNU Make
 SRCS=${:!find src -name '*.c'!}
