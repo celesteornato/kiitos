@@ -15,8 +15,8 @@ Do not use just that, please.
 + An x86_64 assembler
 ** Probably needed for the barebones
 + clang/gcc
-  gcc will probably work for the forseeable future, however the officially-supported
-  compiler is clang.
+  + gcc will probably work for the forseeable future, however the officially-supported
+compiler is clang.
 + xorriso
 + git
 Only required for the first ever ~make~, so as to clone and
