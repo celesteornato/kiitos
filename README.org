@@ -14,11 +14,9 @@ Do not use just that, please.
 + A C compiler for x86_64-unknown-none
 + An x86_64 assembler
 ** Probably needed for the barebones
-+ clang
-gcc could also work; though, as it doesn't support
-cross-compilation by default, one would need to tweak
-~Makefile~. This would in any case still specifically require the
-x86_64-unknown-none gcc compiler.
++ clang/gcc
+  gcc will probably work for the forseeable future, however the officially-supported
+  compiler is clang.
 + xorriso
 + git
 Only required for the first ever ~make~, so as to clone and

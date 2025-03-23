@@ -1,6 +1,7 @@
 .PHONY: all clean debug dbgrun run archi
 .SUFFIXES: .o .c .S .s .od .psf
 
+
 WARNS=\
     -Wall\
     -Wextra\
@@ -49,6 +50,7 @@ OUTDIR=bin
 BUILDDIR=build
 EXENAME=kiitos2
 EXE=$(OUTDIR)/$(EXENAME)
+CC=gcc
 
 # BSD Make, GNU Make
 SRCS=${:!find src -name '*.c'!}
@@ -87,20 +89,20 @@ all: archi $(EXE)
 debug: archi $(EXE).dbg
 
 $(EXE): $(OBJ)
-	cc $(CFLAGS) -O2 $(LDFLAGS) $(WARNS) $(OBJ) -o $(EXE)
+	$(CC) $(CFLAGS) -O2 $(LDFLAGS) $(WARNS) $(OBJ) -o $(EXE)
 
 $(EXE).dbg: $(OBJDBG)
-	cc $(DBGFLAGS) $(LDFLAGS) $(OBJDBG) -o $(EXE).dbg
+	$(CC) $(DBGFLAGS) $(LDFLAGS) $(OBJDBG) -o $(EXE).dbg
 	rm -rf $(OBJDBG)
 
 .c.od:
-	cc $(DBGFLAGS) -c $< -o $@
+	$(CC) $(DBGFLAGS) -c $< -o $@
 .c.o:
-	cc $(CFLAGS) $(WARNS) -c $< -o $@
+	$(CC) $(CFLAGS) $(WARNS) -c $< -o $@
 .S.o:
-	cc -c $< -o $@
+	$(CC) -c $< -o $@
 .s.o:
-	cc -c $< -o $@
+	$(CC) -c $< -o $@
 .psf.o:
 	objcopy -O elf64-x86-64 -B i386 -I binary $< $@
 
