@@ -16,15 +16,15 @@ Do not use just that, please.
 ** Probably needed for the barebones
 + clang/gcc
   + gcc will probably work for the forseeable future, however the officially-supported
-compiler is clang.
+    compiler is clang.
 + xorriso
 + git
-Only required for the first ever ~make~, so as to clone and
-build the limine bootloader. The limine repo will not get deleted
-on ~make clean~-ing.
+  + Only required for the first ever ~make~, so as to clone and
+    build the limine bootloader.
+    The limine repo will not get deleted on ~make clean~-ing.
 + Some ~make~, either GNU or BSD
-Yes, I bothered making it compatible. Yes, it looks ugly.
-If you ask me the GNU syntax is uglier.
+  + Yes, I bothered making it compatible. Yes, it looks ugly.
+    If you ask me the GNU syntax is uglier.
 ** Recommended
 + clang
 + xorriso
