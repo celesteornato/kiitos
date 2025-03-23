@@ -1,0 +1,13 @@
+Checks: '
+  clang-analyzer-*,
+  concurrency-*,
+  misc-*,
+  modernize-*,
+  performance-*,
+  readability-*,
+  portability-*,
+
+  -readability-identifier-length,
+  -readability-magic-numbers,
+  -misc-no-recursion
+'

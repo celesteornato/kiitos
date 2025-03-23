@@ -1,0 +1,10 @@
+*.o
+*.s
+*.dbg
+*.iso
+*.bin
+*.swp
+*~
+bin/*
+logs/*
+limine/
