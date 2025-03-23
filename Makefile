@@ -78,8 +78,8 @@ EXTRA+=$(wildcard src/assets/*.o)
 
 DBGFLAGS=$(CFLAGS) $(WARNS) -g -O0
 
-all: $(EXE)
-debug: $(EXE).dbg
+all: dirs $(EXE)
+debug: dirs $(EXE).dbg
 
 $(EXE): $(OBJ)
 	cc $(CFLAGS) -O2 $(LDFLAGS) $(WARNS) $(OBJ) $(EXTRA) -o $(EXE)

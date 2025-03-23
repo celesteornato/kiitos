@@ -4,7 +4,6 @@
 *.iso
 *.bin
 *.swp
+*.log
 *~
-bin/*
-logs/*
 limine/
