@@ -1,0 +1,9 @@
+#+title: KIITOS/2
+#+subtitle: No correlation to OS/2
+
+This is the full rework of the original Kiitos from 2024, now with
+an actually well-made codebase and easy-to-setup interrupts, at the
+great cost of no longer having a bunch of ugly buggy nasm assembly, as well
+as not actually having keyboard input or anything.
+
+Good os anyways, Doom when
