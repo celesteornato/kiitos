@@ -70,16 +70,16 @@ OBJ+=$(patsubst %.S,%.o,$(ASMSRCS))
 OBJDBG=${SRCS:S/.c/.od/g}
 OBJDBG+=$(patsubst %.c,%.od,$(SRCS))
 
-OBJDBG+=${ASMSRCS:S/.S/.od/g}
-OBJDBG+=$(patsubst %.S,%.od,$(ASMSRCS))
+OBJDBG+=${ASMSRCS:S/.S/.o/g}
+OBJDBG+=$(patsubst %.S,%.o,$(ASMSRCS))
 
 EXTRA=${:!find src/assets/ -name "*.o"!}
 EXTRA+=$(wildcard src/assets/*.o)
 
 DBGFLAGS=$(CFLAGS) $(WARNS) -g -O0
 
-all: dirs $(EXE)
-debug: dirs $(EXE).dbg
+all: $(EXE)
+debug: $(EXE).dbg
 
 $(EXE): $(OBJ)
 	cc $(CFLAGS) -O2 $(LDFLAGS) $(WARNS) $(OBJ) $(EXTRA) -o $(EXE)
