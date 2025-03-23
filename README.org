@@ -1,9 +1,36 @@
 #+title: KIITOS/2
-#+subtitle: No correlation to OS/2
 
+* No correlation to OS/2
 This is the full rework of the original Kiitos from 2024, now with
 an actually well-made codebase and easy-to-setup interrupts, at the
 great cost of no longer having a bunch of ugly buggy nasm assembly, as well
 as not actually having keyboard input or anything.
 
 Good os anyways, Doom when
+
+* Dependencies
+** Minimal requirements
+Do not use just that, please.
+*** A C compiler for x86_64-unknown-none
+*** An x86_64 assembler
+** Probably needed for the barebones
+*** clang
+gcc could also work; though, as it doesn't support
+cross-compilation by default, one would need to tweak
+~Makefile~. This would in any case still specifically require the
+x86_64-unknown-none gcc compiler.
+*** xorriso
+*** git
+Only required for the first ever ~make~, so as to clone and
+build the limine bootloader. The limine repo will not get deleted
+on ~make clean~-ing.
+*** Some ~make~, either GNU or BSD
+Yes, I bothered making it compatible. Yes, it looks ugly.
+If you ask me the GNU syntax is uglier.
+** Recommended
+*** clang
+*** xorriso
+*** git
+*** make
+*** qemu
+*** gdb
