@@ -21,6 +21,7 @@ struct idtr {
 } __attribute__((packed));
 
 __attribute__((aligned(0x10))) static struct interrupt_descriptor idt[256];
+
 static struct idtr idtr = {
     .base = idt,
     .limit = ((uint16_t)sizeof(struct interrupt_descriptor) * 256) - 1};
@@ -43,16 +44,16 @@ static void idt_set_descriptor(bool vector, void (*isr)(void *),
   descriptor->kernel_cs = 0x08;
   descriptor->ist = 0;
   descriptor->attributes = flags;
-  descriptor->isr_mid = (isr_ptr >> 16) & 0xFFFF;
-  descriptor->isr_high = (isr_ptr >> 32) & 0xFFFFFFFF;
+  descriptor->isr_mid = (uint16_t)((isr_ptr >> 16) & 0xFFFF);
+  descriptor->isr_high = (uint32_t)((isr_ptr >> 32) & 0xFFFFFFFF);
   descriptor->reserved = 0;
 }
-void idt_init(void) {
-  idtr.base = idt;
-  idtr.limit =
-      (uint16_t)sizeof(struct interrupt_descriptor) * IDT_MAX_DESCRIPTORS - 1;
 
-  for (uint8_t vector = 0; vector < 32; vector++) {
+void idt_init(void) {
+  const uint8_t isr_stub_len =
+      sizeof(isr_stub_table) / sizeof(isr_stub_table[0]);
+
+  for (uint8_t vector = 0; vector < isr_stub_len; vector++) {
     idt_set_descriptor(vector, isr_stub_table[vector], 0x8E);
     vectors[vector] = true;
   }

@@ -11,6 +11,7 @@ extern struct PSF_font *default_font;
 void k_putchar(char, uint32_t *fb, size_t ppr, uint64_t x, uint64_t y);
 
 void k_puts(const char *, uint32_t *fb, size_t ppr, uint64_t x, uint64_t y,
-            uint64_t fbwidth, uint64_t fbheight);
+            uint64_t off_x, uint64_t off_y, uint64_t fbwidth,
+            uint64_t fbheight);
 
 #endif // FBIO_H_

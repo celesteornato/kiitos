@@ -9,6 +9,10 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#define LONGSTR                                                                \
+  "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp" \
+  "pppppppppppppppppppppppp"
+
 union color {
   uint32_t hex;
   struct {
@@ -49,12 +53,10 @@ void kmain(void) {
   gdt_init();
   __asm__("sti");
   const size_t ppr = pixel_per_row(framebuffer);
-  k_puts("hmwwo!", fb_ptr, ppr, 0, 0, framebuffer->width, framebuffer->height);
-  idt_init();
-  /* volatile int a = 1; */
-  /* volatile int b = 0; */
-  /* a /= b; */
-  k_puts("0000000!", fb_ptr, ppr, 0, 0, framebuffer->width,
+  k_puts("hmwwo!", fb_ptr, ppr, 0, 0, 20, 0, framebuffer->width / 2,
          framebuffer->height);
+  idt_init();
+  k_puts(LONGSTR LONGSTR LONGSTR LONGSTR, fb_ptr, ppr, 0, 0, 20, 0,
+         framebuffer->width / 2, framebuffer->height);
   hcf();
 }

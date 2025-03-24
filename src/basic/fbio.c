@@ -40,12 +40,13 @@ void k_putchar(char c, uint32_t *fb, size_t ppr, uint64_t x, uint64_t y) {
 }
 
 void k_puts(const char *s, uint32_t *fb, size_t ppr, uint64_t x, uint64_t y,
-            uint64_t fbwidth, uint64_t fbheight) {
+            uint64_t off_x, uint64_t off_y, uint64_t fbwidth,
+            uint64_t fbheight) {
   const uint64_t max_col = fbwidth / default_font->width;
   const uint64_t max_lines = fbheight / default_font->height;
   for (; *s != '\0'; ++s, ++x) {
-    uint64_t tmp_x = x % max_col;
-    uint64_t tmp_y = (y + (x / max_col)) % max_lines;
+    uint64_t tmp_x = off_x + (x % max_col);
+    uint64_t tmp_y = off_y + ((y + (x / max_col)) % max_lines);
     k_putchar(*s, fb, ppr, tmp_x, tmp_y);
   }
 }
