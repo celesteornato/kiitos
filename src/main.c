@@ -1,6 +1,7 @@
 #include "basic/fbio.h"
 #include "init/gdt.h"
 #include "interrupts/idt.h"
+#include "interrupts/pic.h"
 #include "limine.h"
 #include "prologue/basefuncs.h"
 #include "prologue/prologue.h"
@@ -48,15 +49,21 @@ void kmain(void) {
       framebuffer_request.response->framebuffers[0];
 
   uint32_t *fb_ptr = framebuffer->address;
+  const size_t ppr = pixel_per_row(framebuffer);
 
   __asm__("cli");
   gdt_init();
-  __asm__("sti");
-  const size_t ppr = pixel_per_row(framebuffer);
-  k_puts("hmwwo!", fb_ptr, ppr, 0, 0, 20, 0, framebuffer->width / 2,
-         framebuffer->height);
   idt_init();
-  k_puts(LONGSTR LONGSTR LONGSTR LONGSTR, fb_ptr, ppr, 0, 0, 20, 0,
+  __asm__("sti");
+  pic_init();
+  k_puts("hello from after PIC init!", fb_ptr, ppr, 0, 0, 20, 0,
          framebuffer->width / 2, framebuffer->height);
+
+  extern char text[20];
+  while (1) {
+    k_puts(text, fb_ptr, ppr, 0, 0, 0, 0, framebuffer->width / 2,
+           framebuffer->height);
+  }
+
   hcf();
 }

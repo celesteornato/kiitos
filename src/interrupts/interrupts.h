@@ -35,5 +35,6 @@ ISR_STUB(28);
 ISR_STUB(29);
 ISR_STUB(30);
 ISR_STUB(31);
+__attribute__((interrupt)) void isr_kbinp(__attribute__((unused)) void *args);
 
 #endif // INTERRUPTS_H_
