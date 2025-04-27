@@ -50,7 +50,9 @@ OUTDIR=bin
 BUILDDIR=build
 EXENAME=kiitos2
 EXE=$(OUTDIR)/$(EXENAME)
-CC=cc
+
+# You are free to change this variable to your favourite compiler, but only clang is officially supported.
+CC=clang
 
 # BSD Make, GNU Make
 SRCS=${:!find src -name '*.c'!}
