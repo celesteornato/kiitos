@@ -31,7 +31,7 @@ CFLAGS+= \
 	-fno-PIC \
 	-m64 \
 	-march=x86-64 \
- 	-mno-mmx \
+	-mno-mmx \
     -mno-80387 \
     -mno-sse \
     -mno-sse2 \
@@ -54,36 +54,30 @@ EXE=$(OUTDIR)/$(EXENAME)
 # You are free to change this variable to your favourite compiler, but only clang is officially supported.
 CC=clang
 
-# BSD Make, GNU Make
+### BSD Make ###
 SRCS=${:!find src -name '*.c'!}
+ASMSRCS=${:!find src -name '*.S'!}
+FONTSRCS=${:!find src -name '*.psf'!}
+OBJ=${SRCS:S/.c/.o/g}
+OBJ+=${ASMSRCS:S/.S/.o/g}
+OBJ+=${FONTSRCS:S/.psf/.o/g}
+OBJDBG=${SRCS:S/.c/.od/g}
+OBJDBG+=${ASMSRCS:S/.S/.o/g}
+OBJDBG+=${FONTSRCS:S/.psf/.o/g}
+
+### GNU Make ###
 SRCS+=$(wildcard src/*.c)
 SRCS+=$(wildcard src/*/*.c)
-
-ASMSRCS=${:!find src -name '*.S'!}
 ASMSRCS+=$(wildcard src/*.S)
 ASMSRCS+=$(wildcard src/*/*.S)
-
-FONTSRCS=${:!find src -name '*.psf'!}
 FONTSRCS+=$(wildcard src/assets/*.psf)
-
-# BSD Make, GNU Make
-OBJ=${SRCS:S/.c/.o/g}
 OBJ+=$(patsubst %.c,%.o,$(SRCS))
-
-OBJ+=${ASMSRCS:S/.S/.o/g}
 OBJ+=$(patsubst %.S,%.o,$(ASMSRCS))
-
-OBJ+=${FONTSRCS:S/.psf/.o/g}
 OBJ+=$(patsubst %.psf,%.o,$(FONTSRCS))
-
-OBJDBG=${SRCS:S/.c/.od/g}
 OBJDBG+=$(patsubst %.c,%.od,$(SRCS))
-
-OBJDBG+=${ASMSRCS:S/.S/.o/g}
 OBJDBG+=$(patsubst %.S,%.o,$(ASMSRCS))
-
-OBJDBG+=${FONTSRCS:S/.psf/.o/g}
 OBJDBG+=$(patsubst %.psf,%.o,$(FONTSRCS))
+
 
 DBGFLAGS=$(CFLAGS) $(WARNS) -g -O0
 
