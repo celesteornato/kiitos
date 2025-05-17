@@ -4,7 +4,8 @@
 
 #include <stdint.h>
 
-void internal_mouse(void) {
+void internal_mouse(void)
+{
     uint8_t bytes[3];
     bytes[0] = inb(0x60);
     bytes[1] = inb(0x60);

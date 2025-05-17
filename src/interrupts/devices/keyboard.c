@@ -13,30 +13,25 @@ enum special_keys {
     RCTRL = 0x14E0,
 };
 
-static inline bool is_key_pressed(int64_t k) {
-    return (k & PS2_KB_RELEASED_BIT) == 0;
-}
-static inline bool key_eq(int64_t k, int64_t k2) {
+static inline bool is_key_pressed(int64_t k) { return (k & PS2_KB_RELEASED_BIT) == 0; }
+static inline bool key_eq(int64_t k, int64_t k2)
+{
     return (k | PS2_KB_RELEASED_BIT) == (k2 | PS2_KB_RELEASED_BIT);
 }
 
 static char kbdus[128] = {
-    0,   27,   '1',  '2', '3',  '4', '5', '6', '7', '8', '9', '0', '-',
-    '=', '\b', '\t', 'q', 'w',  'e', 'r', 't', 'y', 'u', 'i', 'o', 'p',
-    '[', ']',  '\n', 0,   'a',  's', 'd', 'f', 'g', 'h', 'j', 'k', 'l',
-    ';', '\'', '`',  0,   '\\', 'z', 'x', 'c', 'v', 'b', 'n', 'm', ',',
-    '.', '/',  0,    '*', 0,    ' ', 0,   0,   0,   0,   0,   0,   0,
-    0,   0,    0,    0,   0,    0,   0,   0,   0,   '-', 0,   0,   0,
-    '+', 0,    0,    0,   0,    0,   0,   0,   0,   0,   0,   0,
+    0,   27,  '1', '2', '3',  '4', '5', '6',  '7', '8', '9',  '0', '-', '=', '\b', '\t', 'q', 'w',
+    'e', 'r', 't', 'y', 'u',  'i', 'o', 'p',  '[', ']', '\n', 0,   'a', 's', 'd',  'f',  'g', 'h',
+    'j', 'k', 'l', ';', '\'', '`', 0,   '\\', 'z', 'x', 'c',  'v', 'b', 'n', 'm',  ',',  '.', '/',
+    0,   '*', 0,   ' ', 0,    0,   0,   0,    0,   0,   0,    0,   0,   0,   0,    0,    0,   0,
+    0,   0,   '-', 0,   0,    0,   '+', 0,    0,   0,   0,    0,   0,   0,   0,    0,    0,   0,
 };
 static char kbdfr[256] = {
-    0,   27,   '&',  'e', '"',  '\'', '(', '-', 'e', '_', 'c', 'a', ')',
-    '=', '\b', '\t', 'a', 'z',  'e',  'r', 't', 'y', 'u', 'i', 'o', 'p',
-    '[', ']',  '\n', 0,   'q',  's',  'd', 'f', 'g', 'h', 'j', 'k', 'l',
-    'm', '\'', '`',  0,   '\\', 'z',  'x', 'c', 'v', 'b', 'n', ',', ';',
-    ':', '!',  0,    '*', 0,    ' ',  0,   0,   0,   0,   0,   0,   0,
-    0,   0,    0,    0,   0,    0,    0,   0,   0,   '-', 0,   0,   0,
-    '+', 0,    0,    0,   0,    0,    0,   0,   0,   0,   0,   0,
+    0,   27,  '&', 'e', '"',  '\'', '(', '-',  'e', '_', 'c',  'a', ')', '=', '\b', '\t', 'a', 'z',
+    'e', 'r', 't', 'y', 'u',  'i',  'o', 'p',  '[', ']', '\n', 0,   'q', 's', 'd',  'f',  'g', 'h',
+    'j', 'k', 'l', 'm', '\'', '`',  0,   '\\', 'z', 'x', 'c',  'v', 'b', 'n', ',',  ';',  ':', '!',
+    0,   '*', 0,   ' ', 0,    0,    0,   0,    0,   0,   0,    0,   0,   0,   0,    0,    0,   0,
+    0,   0,   '-', 0,   0,    0,    '+', 0,    0,   0,   0,    0,   0,   0,   0,    0,    0,   0,
 };
 static char *current_kb = kbdfr;
 
@@ -46,14 +41,16 @@ static uint8_t keybuff_idx = 0;
 bool shift_pressed = false;
 bool ctrl_pressed = false;
 
-static int64_t buff_to_keycode(void) {
+static int64_t buff_to_keycode(void)
+{
     union {
         uint8_t buff[8];
         int64_t keycode;
     } conversion; // This is going to be endianness hell isn't it
 
     // Loop has to be reserved for big-endian platforms (really?)
-    for (int i = 7; i >= 0; --i) {
+    for (int i = 7; i >= 0; --i)
+    {
         conversion.buff[i] = keypress_buffer[i];
         keypress_buffer[i] = 0;
     }
@@ -61,20 +58,25 @@ static int64_t buff_to_keycode(void) {
     return conversion.keycode;
 }
 
-static void blurt_out_keybuff(void) {
+static void blurt_out_keybuff(void)
+{
     int64_t keycode = buff_to_keycode(); // cleans keypress buffer for us.
 
-    if (key_eq(keycode, RCTRL)) {
+    if (key_eq(keycode, RCTRL))
+    {
         ctrl_pressed = (keycode & 128) == 0;
         return;
     }
 
     // "Simple" keypress
-    if (keycode < 0xFF) {
-        if (kbdus[keycode] == 'l' && ctrl_pressed) {
+    if (keycode < 0xFF)
+    {
+        if (kbdus[keycode] == 'l' && ctrl_pressed)
+        {
             k_paint(0);
         }
-        if (is_key_pressed(keycode)) {
+        if (is_key_pressed(keycode))
+        {
             k_dbg_putc(kbdus[keycode]);
         }
         return;
@@ -84,18 +86,21 @@ static void blurt_out_keybuff(void) {
     k_dbg_printd_base(keycode, 16);
     k_dbg_putc('\n');
 
-    switch (keycode) {
+    switch (keycode)
+    {
     default:
         break;
     }
 }
 
-void internal_kbinp(void) {
+void internal_kbinp(void)
+{
     uint8_t scancode = inb(0x60);
 
     // keypress_buffer[keybuff_idx++] = scancode;
 
-    if (scancode != 0xE0 && scancode != 0xF0) {
+    if (scancode != 0xE0 && scancode != 0xF0)
+    {
         // blurt_out_keybuff();
     }
     __asm__("int $35");

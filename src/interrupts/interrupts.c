@@ -36,17 +36,18 @@ static const char *error_messages[] = {
     "",
     "Triple Fault :(((",
     "FPU Error Interrupt (wow man your cpu is ooollld)",
-
 };
 
-void exception_handler(uint8_t err_code) {
-  k_dbg_print("Exception:\n\t", 0x3);
-  k_dbg_print(error_messages[err_code], 0x3);
-  k_dbg_print("\nKernel Panic!\n", 0x3);
-  k_dbg_print(ASCII_KIITKAT, 0x2);
-  __asm__("hlt");
-  while (1) {
-  }
+void exception_handler(uint8_t err_code)
+{
+    k_dbg_print("Exception:\n\t", 0x3);
+    k_dbg_print(error_messages[err_code], 0x3);
+    k_dbg_print("\nKernel Panic!\n", 0x3);
+    k_dbg_print(ASCII_KIITKAT, 0x2);
+    __asm__("hlt");
+    while (1)
+    {
+    }
 }
 
 /*
@@ -55,21 +56,23 @@ void exception_handler(uint8_t err_code) {
  * the exception handler.
  * It will probably crash if you call it for an exception. This is good.
  * */
-void unhandled(uint8_t int_number) {
-  // int_number refers to the absolute index of the interrupt in the IDT, we
-  // adjust it to be from the PIC's point of view. int_number >= 32 so it fits
-  // in a uint8.
-  const uint8_t adjusted_int_number = int_number - IDT_HW_DESCRIPTORS;
+void unhandled(uint8_t int_number)
+{
+    // int_number refers to the absolute index of the interrupt in the IDT, we
+    // adjust it to be from the PIC's point of view. int_number >= 32 so it fits
+    // in a uint8.
+    const uint8_t adjusted_int_number = int_number - IDT_HW_DESCRIPTORS;
 
-  // PIC Interrupt 7 and 15 cannot physically exist, if they are triggered
-  // it is a "spurious interrupt" and should be ignored.
-  if (int_number == 7 || int_number == 15) {
-    return;
-  }
+    // PIC Interrupt 7 and 15 cannot physically exist, if they are triggered
+    // it is a "spurious interrupt" and should be ignored.
+    if (int_number == 7 || int_number == 15)
+    {
+        return;
+    }
 
-  k_dbg_print("Unhandled interrupt:\n\tCode ", 0x2);
-  k_dbg_printd(int_number);
-  k_dbg_print("\n", 0x2);
+    k_dbg_print("Unhandled interrupt:\n\tCode ", 0x2);
+    k_dbg_printd(int_number);
+    k_dbg_print("\n", 0x2);
 
-  pic_send_eoi(adjusted_int_number);
+    pic_send_eoi(adjusted_int_number);
 }
