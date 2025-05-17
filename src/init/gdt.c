@@ -1,4 +1,4 @@
-#include "gdt.h"
+#include <init/gdt.h>
 #include <stdint.h>
 
 #define GDT_SIZE 3

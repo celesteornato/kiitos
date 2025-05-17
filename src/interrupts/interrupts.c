@@ -1,119 +1,75 @@
-#include "interrupts.h"
-#include "../basic/kio.h"
+#include <basic/fbio.h>
+#include <interrupts/idt.h>
+#include <interrupts/interrupts.h>
+#include <interrupts/pic.h>
+#include <misc/art.h>
 
-char text[20] = "Homly Smitt";
+#include <stdint.h>
 
-#define PIC1_sendEOI()                                                         \
-  __asm__ volatile("outb %b0, %w1" : : "a"(0x20), "Nd"(0x20) : "memory")
-#define PIC2_sendEOI()                                                         \
-  __asm__ volatile("outb %b0, %w1" : : "a"(0xA0), "Nd"(0x20) : "memory")
+static const char *error_messages[] = {
+    "Division error: div by 0 or division exceeds bounds",
+    "Debug",
+    "Non-Maskable interrupt",
+    "Breakpoint",
+    "Overflow",
+    "Bound Range Exceeded",
+    "Invalid Opcode",
+    "Device not available",
+    "Double Fault",
+    "Coprocessor Segment overrun (how old is your cpu!?)",
+    "Invalid TSS",
+    "Segment Not Present",
+    "Stack-Segment Fault",
+    "GPF :(",
+    "Page Fault",
+    "",
+    "x87 FP-exception",
+    "Alignment Check",
+    "Machine Check",
+    "SIMD FP-exception",
+    "Virtualization Exception",
+    "Control Point Exception",
+    "",
+    "Hypervisor Injection Exception",
+    "VMM Communication Exception",
+    "Security Exception",
+    "",
+    "Triple Fault :(((",
+    "FPU Error Interrupt (wow man your cpu is ooollld)",
 
-__attribute__((interrupt)) void isr_stub0(__attribute__((unused)) void *arg) {
+};
+
+void exception_handler(uint8_t err_code) {
+  k_dbg_print("Exception:\n\t", 0x3);
+  k_dbg_print(error_messages[err_code], 0x3);
+  k_dbg_print("\nKernel Panic!\n", 0x3);
+  k_dbg_print(ASCII_KIITKAT, 0x2);
   __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub1(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub2(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub3(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub4(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub5(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub6(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub7(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub8(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub9(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub10(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub11(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub12(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub13(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub14(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub15(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub16(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub17(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub18(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub19(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub20(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub21(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub22(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub23(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub24(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub25(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub26(__attribute__((unused)) void *arg) {
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub27(__attribute__((unused)) void *arg) {
-  text[0] = 'G';
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub28(__attribute__((unused)) void *arg) {
-  text[0] = 'G';
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub29(__attribute__((unused)) void *arg) {
-  text[0] = 'G';
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub30(__attribute__((unused)) void *arg) {
-  text[0] = 'G';
-  __asm__("hlt");
-}
-__attribute__((interrupt)) void isr_stub31(__attribute__((unused)) void *arg) {
-  text[0] = 'G';
-  __asm__("hlt");
+  while (1) {
+  }
 }
 
-__attribute__((interrupt)) void isr_kbinp(__attribute__((unused)) void *args) {
-  volatile unsigned char sc;
-  __asm__ volatile("inb %w1, %b0" : "=a"(sc) : "Nd"(0x60) : "memory");
+/*
+ * Called from assembly, at x86/isr_stubs.S.
+ * int_number being under 32 is undefined as all exceptions should instead call
+ * the exception handler.
+ * It will probably crash if you call it for an exception. This is good.
+ * */
+void unhandled(uint8_t int_number) {
+  // int_number refers to the absolute index of the interrupt in the IDT, we
+  // adjust it to be from the PIC's point of view. int_number >= 32 so it fits
+  // in a uint8.
+  const uint8_t adjusted_int_number = int_number - IDT_HW_DESCRIPTORS;
 
-  text[0] = 'G';
-  PIC1_sendEOI();
+  // PIC Interrupt 7 and 15 cannot physically exist, if they are triggered
+  // it is a "spurious interrupt" and should be ignored.
+  if (int_number == 7 || int_number == 15) {
+    return;
+  }
+
+  k_dbg_print("Unhandled interrupt:\n\tCode ", 0x2);
+  k_dbg_printd(int_number);
+  k_dbg_print("\n", 0x2);
+
+  pic_send_eoi(adjusted_int_number);
 }

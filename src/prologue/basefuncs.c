@@ -1,4 +1,5 @@
-#include "basefuncs.h"
+#include <prologue/basefuncs.h>
+#include <stdint.h>
 
 void *memcpy(void *restrict dest, const void *restrict src, size_t n) {
   uint8_t *pdest = (uint8_t *)dest;

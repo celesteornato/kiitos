@@ -1,5 +1,5 @@
-#include "idt.h"
-#include "interrupts.h"
+#include <interrupts/idt.h>
+#include <interrupts/interrupts.h>
 #include <stdbool.h>
 #include <stdint.h>
 
@@ -18,7 +18,7 @@ struct idtr {
   struct interrupt_descriptor *base;
 } __attribute__((packed));
 
-__attribute__((aligned(0x10))) static struct interrupt_descriptor idt[256];
+static struct interrupt_descriptor idt[IDT_MAX_DESCRIPTORS] = {0};
 
 static struct idtr idtr = {
     .base = idt,
@@ -26,17 +26,15 @@ static struct idtr idtr = {
 
 static bool vectors[IDT_MAX_DESCRIPTORS] = {0};
 
-extern void isr_kb(void *);
+void (*(isr_table[]))(void) = {
+    isr_0,     isr_1,     isr_2,  isr_3,    isr_4,  isr_5,  isr_6,  isr_7,
+    isr_8,     isr_9,     isr_10, isr_11,   isr_12, isr_13, isr_14, isr_15,
+    isr_16,    isr_17,    isr_18, isr_19,   isr_20, isr_21, isr_22, isr_23,
+    isr_24,    isr_25,    isr_26, isr_27,   isr_28, isr_29, isr_30, isr_31,
+    isr_clock, isr_kbinp, isr_34, isr_35,   isr_36, isr_37, isr_38, isr_40,
+    isr_41,    isr_42,    isr_43, isr_mouse};
 
-void (*isr_table[])(void *) = {
-    isr_stub0,  isr_stub1,  isr_stub2,  isr_stub3,  isr_stub4,  isr_stub5,
-    isr_stub6,  isr_stub7,  isr_stub8,  isr_stub9,  isr_stub10, isr_stub11,
-    isr_stub12, isr_stub13, isr_stub14, isr_stub15, isr_stub16, isr_stub17,
-    isr_stub18, isr_stub19, isr_stub20, isr_stub21, isr_stub22, isr_stub23,
-    isr_stub24, isr_stub25, isr_stub26, isr_stub27, isr_stub28, isr_stub29,
-    isr_stub30, isr_stub31, isr_kbinp,  isr_kbinp};
-
-static void idt_set_descriptor(bool vector, void (*isr)(void *),
+static void idt_set_descriptor(uint8_t vector, void (*isr)(void),
                                uint8_t flags) {
   struct interrupt_descriptor *descriptor = &idt[vector];
   uint64_t isr_ptr = (uint64_t)isr;
@@ -50,9 +48,9 @@ static void idt_set_descriptor(bool vector, void (*isr)(void *),
 }
 
 void idt_init(void) {
-  const uint8_t isr_stub_len = sizeof(isr_table) / sizeof(isr_table[0]);
+  const uint8_t isr_table_len = sizeof(isr_table) / sizeof(isr_table[0]);
 
-  for (uint8_t vector = 0; vector < isr_stub_len; vector++) {
+  for (uint8_t vector = 0; vector < isr_table_len; vector++) {
     idt_set_descriptor(vector, isr_table[vector], 0x8E);
     vectors[vector] = true;
   }

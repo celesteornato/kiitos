@@ -1,11 +1,12 @@
-#include "basic/fbio.h"
-#include "init/gdt.h"
-#include "interrupts/idt.h"
-#include "interrupts/pic.h"
-#include "limine.h"
-#include "prologue/basefuncs.h"
-#include "prologue/prologue.h"
 #include <assert.h>
+#include <basic/fbio.h>
+#include <init/gdt.h>
+#include <interrupts/idt.h>
+#include <interrupts/pic.h>
+#include <io/mouse.h>
+#include <limine.h>
+#include <misc/art.h>
+#include <prologue/prologue.h>
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -14,16 +15,7 @@
   "pppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppppp" \
   "pppppppppppppppppppppppp"
 
-union color {
-  uint32_t hex;
-  struct {
-    uint8_t b;
-    uint8_t g;
-    uint8_t r;
-    uint8_t a;
-  };
-};
-
+// Halt and catch fire
 static void hcf(void) {
   for (;;) {
     __asm__("hlt");
@@ -35,35 +27,41 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb) {
 }
 
 void kmain(void) {
-  if (LIMINE_BASE_REVISION_SUPPORTED == false) {
+  if (!LIMINE_BASE_REVISION_SUPPORTED) {
     hcf();
   }
 
   // Ensure we got a framebuffer.
-  if (framebuffer_request.response == NULL ||
-      framebuffer_request.response->framebuffer_count < 1) {
+  struct limine_framebuffer_response *volatile response =
+      framebuffer_request.response;
+
+  if (response == NULL || response->framebuffer_count < 1) {
     hcf();
   }
 
-  struct limine_framebuffer *framebuffer =
-      framebuffer_request.response->framebuffers[0];
+  struct limine_framebuffer *framebuffer = response->framebuffers[0];
 
   uint32_t *fb_ptr = framebuffer->address;
+
   const size_t ppr = pixel_per_row(framebuffer);
+  k_set_buff_settings(fb_ptr, ppr, framebuffer->width, framebuffer->height);
+
+  k_paint(0x0e3d37);
+  k_dbg_puts(ASCII_WELCOME);
 
   __asm__("cli");
+  k_dbg_puts("\n\nInitialising CPU...");
   gdt_init();
+  k_dbg_puts("\tGDT loaded!");
   idt_init();
-  __asm__("sti");
+  k_dbg_puts("\tIDT loaded!");
   pic_init();
-  k_puts("hello from after PIC init!", fb_ptr, ppr, 0, 0, 20, 0,
-         framebuffer->width / 2, framebuffer->height);
+  k_dbg_puts("\tPIC configured!");
+  __asm__("sti");
 
-  extern char text[20];
-  while (1) {
-    k_puts(text, fb_ptr, ppr, 0, 0, 0, 0, framebuffer->width / 2,
-           framebuffer->height);
+  k_dbg_puts("\nInitialising PS/2 Mouse...");
+  ps2_mouse_init();
+  extern int clock;
+  while (true) {
   }
-
-  hcf();
 }

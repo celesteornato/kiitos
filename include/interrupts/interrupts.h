@@ -1,9 +1,9 @@
 #ifndef INTERRUPTS_H_
 #define INTERRUPTS_H_
 
-#define ISR_STUB(n) __attribute__((interrupt)) void isr_stub##n(void *)
+// Undefined at end of file
+#define ISR_STUB(n) void isr_##n(void)
 
-ISR_STUB(0);
 ISR_STUB(1);
 ISR_STUB(2);
 ISR_STUB(3);
@@ -35,6 +35,24 @@ ISR_STUB(28);
 ISR_STUB(29);
 ISR_STUB(30);
 ISR_STUB(31);
-__attribute__((interrupt)) void isr_kbinp(__attribute__((unused)) void *args);
+ISR_STUB(32);
+ISR_STUB(33);
+ISR_STUB(34);
+ISR_STUB(35);
+ISR_STUB(36);
+ISR_STUB(37);
+ISR_STUB(38);
+ISR_STUB(39);
+ISR_STUB(40);
+ISR_STUB(41);
+ISR_STUB(42);
+ISR_STUB(43);
+
+extern void isr_0(void);
+extern void isr_clock(void);
+extern void isr_kbinp(void);
+extern void isr_mouse(void);
+
+#undef ISR_STUB
 
 #endif // INTERRUPTS_H_

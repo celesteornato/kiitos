@@ -7,7 +7,6 @@ WARNS=\
     -Wextra\
     -Wpedantic\
     -Wunused\
-    -Wunused\
     -Wfloat-equal\
     -Wundef\
     -Wshadow\
@@ -36,7 +35,8 @@ CFLAGS+= \
     -mno-sse \
     -mno-sse2 \
 	-mno-red-zone \
-	-mcmodel=kernel
+	-mcmodel=kernel \
+	-I./include
 
 LDFLAGS += \
 	-Wl,-m,elf_x86_64 \
@@ -158,3 +158,4 @@ clean:
 	rm -rf $(OUTDIR)/*
 	rm -rf $(BUILDDIR)/*
 	rm -f $(OBJ)
+	rm -f $(OBJDBG)
