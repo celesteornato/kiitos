@@ -17,15 +17,8 @@
 .endm
 
 
-.globl syscall
 .globl isr_syscall
 
-
-// Function that makes it easier to trigger a syscall, called in the kernel code.
-// In the corresponding header, takes a parameter (%di), which will be passed to isr_syscall
-syscall:
-    int $0x80
-    ret
 
 // Takes DI as a parameter, which internal_syscall will also see.
 // RAX will be changed, this is expected.

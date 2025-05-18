@@ -2,7 +2,7 @@
 #include <interrupts/pic.h>
 #include <stdint.h>
 
-int64_t clock = 0;
+_Atomic int64_t clock = 0;
 
 void internal_clock(void)
 {

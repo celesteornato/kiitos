@@ -4,9 +4,11 @@
 #include <interrupts/pic.h>
 #include <misc/art.h>
 
+#include <arch/x86/asm_functions.h>
+
 #include <stdint.h>
 
-static const char *error_messages[] = {
+const char *const error_messages[] = {
     "Division error: div by 0 or division exceeds bounds",
     "Debug",
     "Non-Maskable interrupt",
@@ -22,32 +24,29 @@ static const char *error_messages[] = {
     "Stack-Segment Fault",
     "GPF :(",
     "Page Fault",
-    "",
+    " ",
     "x87 FP-exception",
     "Alignment Check",
     "Machine Check",
     "SIMD FP-exception",
     "Virtualization Exception",
     "Control Point Exception",
-    "",
+    " ",
     "Hypervisor Injection Exception",
     "VMM Communication Exception",
     "Security Exception",
-    "",
+    "Invalid Foomp!!!!",
     "Triple Fault :(((",
     "FPU Error Interrupt (wow man your cpu is ooollld)",
 };
 
-void exception_handler(uint8_t err_code)
+[[noreturn]] void exception_handler(uint8_t err_code)
 {
-    k_dbg_print("Exception:\n\t", 0x3);
-    k_dbg_print(error_messages[err_code], 0x3);
-    k_dbg_print("\nKernel Panic!\n", 0x3);
-    k_dbg_print(ASCII_KIITKAT, 0x2);
-    __asm__("hlt");
-    while (1)
-    {
-    }
+    k_print("Exception:\n\t", 0x3);
+    k_print(error_messages[err_code], 0x3);
+    k_print("\nKernel Panic!\n", 0x3);
+    k_print(ASCII_KIITKAT, 0x2);
+    hcf();
 }
 
 /*
@@ -70,9 +69,9 @@ void unhandled(uint8_t int_number)
         return;
     }
 
-    k_dbg_print("Unhandled interrupt:\n\tCode ", 0x2);
-    k_dbg_printd(int_number);
-    k_dbg_print("\n", 0x2);
+    k_print("Unhandled interrupt:\n\tCode ", 0x2);
+    k_printd(int_number);
+    k_print("\n", 0x2);
 
     pic_send_eoi(adjusted_int_number);
 }

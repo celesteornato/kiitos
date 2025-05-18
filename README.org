@@ -29,6 +29,6 @@ Do not use just that, please.
 + clang
 + xorriso
 + git
-+ make
++ bmake
 + qemu
 + gdb

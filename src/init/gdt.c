@@ -3,6 +3,11 @@
 
 #define GDT_SIZE 3
 
+enum MASKS : uint32_t {
+    LOWER_32 = 0xFFFF,
+    LOWER_8 = 0xFF,
+};
+
 struct segment_descriptor {
     uint16_t limit_low;
     uint16_t base_low;
@@ -19,18 +24,18 @@ struct gdtr {
 } __attribute__((packed));
 
 static struct segment_descriptor gdt[GDT_SIZE];
-static struct gdtr gdtr = {.lim = sizeof(gdt) - 1, .addr = gdt};
+static const struct gdtr gdtr = {.lim = sizeof(gdt) - 1, .addr = gdt};
 
 extern void reload_segments(void); // defined in lgdt.S
 
 static void set_descriptor(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags)
 {
     gdt[num] = (struct segment_descriptor){
-        .base_low = base & 0xFFFF,
-        .base_mid = (base >> 16) & 0xFF,
-        .base_high = (base >> 24) & 0xFF,
-        .limit_low = limit & 0xFFFF,
-        .limit_high = (uint8_t)(limit >> 16),
+        .base_low = base & LOWER_32,
+        .base_mid = (base >> 16U) & LOWER_8,
+        .base_high = (base >> 24U) & LOWER_8,
+        .limit_low = limit & LOWER_32,
+        .limit_high = (uint8_t)(limit >> 16U),
         .flags = flags,
         .access = access,
     };

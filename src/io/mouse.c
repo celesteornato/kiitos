@@ -1,8 +1,7 @@
+#include <arch/x86/asm_functions.h>
 #include <basic/fbio.h>
-#include <basic/kio.h>
 #include <io/gpiodefs.h>
 #include <io/mouse.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 #define PS2_MOUSE_ENABLE 0xF4
@@ -13,8 +12,8 @@
 void ps2_mouse_init(void)
 {
     int tries = 0;
-    uint8_t answer = 0;
-    while (tries++ < MAX_RETRIES && answer != PS2_MOUSE_ACKNOWLEDGEMENT)
+    volatile uint8_t answer = 0;
+    for (tries = 0; tries < MAX_RETRIES && answer != PS2_MOUSE_ACKNOWLEDGEMENT; ++tries)
     {
         outb(PS2_PORT, PS2_MOUSE_ENABLE);
         io_wait();
@@ -25,15 +24,15 @@ void ps2_mouse_init(void)
 
     if (answer == PS2_MOUSE_ACKNOWLEDGEMENT)
     {
-        k_dbg_puts("\tPS/2 Mouse sucessfully initialised!");
-        k_dbg_print("\t\tOnly took ", 0);
-        k_dbg_printd(tries);
-        k_dbg_puts(" tries.");
+        k_puts("\tPS/2 Mouse sucessfully initialised!");
+        k_print("\t\tOnly took ", 0);
+        k_printd(tries);
+        k_puts(tries == 1 ? " try." : " tries.");
     }
     else
     {
-        k_dbg_print("\tError initialising PS/2 mouse:\n\terror code ", 0x2);
-        k_dbg_printd_base(answer, 16);
-        k_dbg_print("\n", 0);
+        k_print("\tError initialising PS/2 mouse:\n\terror code ", 0x2);
+        k_printd_base(answer, 16);
+        k_print("\n", 0);
     }
 }

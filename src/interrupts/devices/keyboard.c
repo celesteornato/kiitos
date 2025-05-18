@@ -1,17 +1,21 @@
+#include <arch/x86/asm_functions.h>
 #include <basic/fbio.h>
-#include <basic/kio.h>
-#include <interrupts/devices/keyboard.h>
 #include <interrupts/pic.h>
 #include <io/gpiodefs.h>
-#include <stdbool.h>
 #include <stdint.h>
 
 // The biggest keypress is 6 bytes, this gives us leeway and makes it nicer converting the array
-// into a single int64
+// into a single uint64
 static uint8_t keypress_buffer[8] = {0};
 static uint8_t keybuff_idx = 0;
 
-uint64_t last_keypress = 0;
+/*
+ Required to be atomic, as the operation assigning to it normally is not.
+ At optimisations >=02, buff_to_keycode will write directly to this (which would not be atomic
+ normally), creating a race condition with the other processes reading and writing to this value
+ (i.e. io/keyboard).
+*/
+_Atomic uint64_t atomic_last_keypress = 0;
 
 static uint64_t buff_to_keycode(void)
 {
@@ -40,7 +44,7 @@ void internal_kbinp(void)
     // 0xE0 and 0xF0 indicate that another kb interrupt is coming, as some keys take several bytes
     if (scancode != 0xE0 && scancode != 0xF0)
     {
-        last_keypress = buff_to_keycode();
+        atomic_last_keypress = buff_to_keycode();
     }
 
     pic_send_eoi(1);

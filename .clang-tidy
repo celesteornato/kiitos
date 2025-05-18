@@ -1,11 +1,24 @@
 Checks: '
-  clang-analyzer-*,
-  misc-*,
-  modernize-*,
-  performance-*,
-  readability-*,
-  portability-*,
+    *,
+    -abseil-*,
+    -altera-*,
+    -boost-*,
+    -android-*,
+    -darwin-*,
+    -fuchsia-*,
+    -google-*,
+    -linuxkernel-*,
+    -llvm-*,
+    -llvmlibc-*,
+    -objc-*,
+    -zircon-*
+    -openmp-*,
 
-  -readability-identifier-length,
-  -readability-magic-numbers,
-  -misc-no-recursion
+    -readability-identifier-length,
+    -readability-magic-numbers,
+    -cppcoreguidelines-avoid-magic-numbers,
+    -cppcoreguidelines-avoid-non-const-global-variables,
+    -bugprone-easily-swappable-parameters,
+    -cppcoreguidelines-interfaces-global-init,
+    -misc-no-recursion
+'

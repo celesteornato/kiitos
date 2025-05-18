@@ -1,32 +1,25 @@
+#include <arch/x86/asm_functions.h>
 #include <basic/fbio.h>
 #include <init/gdt.h>
+#include <interrupts/helpers/syscall.h>
 #include <interrupts/idt.h>
 #include <interrupts/pic.h>
-#include <interrupts/syscall.h>
 #include <io/keyboard.h>
 #include <io/mouse.h>
 #include <limine.h>
 #include <misc/art.h>
+#include <misc/colours.h>
 #include <prologue/prologue.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
-// Halt and catch fire
-static void hcf(void)
-{
-    for (;;)
-    {
-        __asm__("hlt");
-    }
-}
-
 static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
 {
-    return fb->pitch * 8 / fb->bpp;
+    const int bits_per_bytes = 8;
+    return bits_per_bytes * fb->pitch / fb->bpp;
 }
 
-void kmain(void)
+[[noreturn]] void kmain(void)
 {
     if (!LIMINE_BASE_REVISION_SUPPORTED)
     {
@@ -48,23 +41,26 @@ void kmain(void)
     const size_t ppr = pixel_per_row(framebuffer);
     k_set_buff_settings(fb_ptr, ppr, framebuffer->width, framebuffer->height);
 
-    k_paint(0x0e3d37);
-    k_dbg_puts(ASCII_WELCOME);
+    k_paint(BG);
+    k_puts(ASCII_WELCOME);
 
-    __asm__("cli");
-    k_dbg_puts("\n\nInitialising CPU...");
+    interrupt_disable();
+
+    k_puts("\n\nInitialising CPU...");
     gdt_init();
-    k_dbg_puts("\tGDT loaded!");
+    k_puts("\tGDT loaded!");
     idt_init();
-    k_dbg_puts("\tIDT loaded!");
+    k_puts("\tIDT loaded!");
     pic_init();
-    k_dbg_puts("\tPIC configured!");
-    __asm__("sti");
+    k_puts("\tPIC configured!");
 
-    k_dbg_puts("\nInitialising PS/2 Mouse...");
+    interrupt_enable();
+
+    k_puts("\nInitialising PS/2 Mouse...");
     ps2_mouse_init();
 
-    k_dbg_printd((char)syscall(0));
-
-    hcf();
+    while (1)
+    {
+        syscall_dbg(FBWRITE, syscall_dbg(KBINP, 0, 0, 0, 0), 1, 0, 0);
+    }
 }

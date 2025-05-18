@@ -1,6 +1,7 @@
-#include <basic/kio.h>
+#include <arch/x86/asm_functions.h>
 #include <interrupts/idt.h>
 #include <interrupts/pic.h>
+#include <io/gpiodefs.h>
 #include <stdint.h>
 
 static inline void conf_pic(uint16_t port, uint8_t byte)

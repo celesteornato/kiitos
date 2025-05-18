@@ -21,22 +21,26 @@
 .macro except n
     .globl isr_\n
     isr_\n:
+        cli
         pushaq
         cld    // C code following the sysV ABI requires DF to be clear on function entry
-        mov $\n , %di
+        mov $\n , %rdi // While the C function sees it as an 8 bit value, it messes up things at O2 and higher when %rdi is not fully cleared out
         call exception_handler
         popaq
+        sti
         iretq
 .endm
 
 .macro unhandled n
     .globl isr_\n
     isr_\n:
+        cli
         pushaq
-        cld    // C code following the sysV ABI requires DF to be clear on function entry
-        mov $\n , %di
+        cld
+        mov $\n , %rdi
         call unhandled
         popaq
+        sti
         iretq
 .endm
 
@@ -46,7 +50,7 @@
     isr_\name:
         cli
         pushaq
-        cld    // C code following the sysV ABI requires DF to be clear on function entry
+        cld
         call internal_\name
         popaq
         sti

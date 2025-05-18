@@ -23,7 +23,7 @@ WARNS=\
     -Wunreachable-code
 
 CFLAGS+= \
-	--std=c17 \
+	--std=c2x \
 	-ffreestanding \
 	-fno-stack-protector \
 	-fno-stack-check \
@@ -36,6 +36,8 @@ CFLAGS+= \
     -mno-sse2 \
 	-mno-red-zone \
 	-mcmodel=kernel \
+	-O3 \
+	-flto \
 	-I./include
 
 LDFLAGS += \
@@ -79,13 +81,13 @@ OBJDBG+=$(patsubst %.S,%.o,$(ASMSRCS))
 OBJDBG+=$(patsubst %.psf,%.o,$(FONTSRCS))
 
 
-DBGFLAGS=$(CFLAGS) $(WARNS) -g -O0
+DBGFLAGS=$(CFLAGS) $(WARNS) -g
 
 all: archi $(EXE)
 debug: archi $(EXE).dbg
 
 $(EXE): $(OBJ)
-	$(CC) $(CFLAGS) -O2 $(LDFLAGS) $(WARNS) $(OBJ) -o $(EXE)
+	$(CC) $(CFLAGS) $(LDFLAGS) $(WARNS) $(OBJ) -o $(EXE)
 
 $(EXE).dbg: $(OBJDBG)
 	$(CC) $(DBGFLAGS) $(LDFLAGS) $(OBJDBG) -o $(EXE).dbg
@@ -95,6 +97,7 @@ $(EXE).dbg: $(OBJDBG)
 	$(CC) $(DBGFLAGS) -c $< -o $@
 .c.o:
 	$(CC) $(CFLAGS) $(WARNS) -c $< -o $@
+
 .S.o:
 	$(CC) -c $< -o $@
 .s.o:

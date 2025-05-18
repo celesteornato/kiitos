@@ -1,13 +1,8 @@
 #include <basic/fbio.h>
+#include <misc/colours.h>
 #include <stdint.h>
 
-#define BG (0x0e3d37)
-
-#define FG (0xffffff)
-#define FGWR (0xff44ff)
-#define FGERR (0xff00ff)
-#define FGKERNFAULT (0xff1111)
-
+// Can be aligned but I don't know why and that scares me a bit
 struct PSF_font {
     uint32_t magic;         /* magic bytes to identify PSF */
     uint32_t version;       /* zero */
@@ -19,24 +14,26 @@ struct PSF_font {
     uint32_t width;         /* width in pixels */
 };
 
-struct framebuffer_info_internal {
-    uint32_t *fb;
+volatile struct framebuffer_info_internal {
     size_t ppr;
 
-    uint64_t x;
-    uint64_t y;
+    volatile uint32_t *fb;
 
     uint64_t width;
     uint64_t height;
-};
+    _Atomic uint64_t x; // Atomic because an interrupt might trigger while x/y are being updated
+    _Atomic uint64_t y;
+} __attribute__((aligned(64)));
 
-extern struct PSF_font _binary_src_assets_terminus_psf_start;
-struct PSF_font *default_font = &_binary_src_assets_terminus_psf_start;
+extern const struct PSF_font
+    _binary_src_assets_terminus_psf_start; // NOLINT as this is its object file name and it cannot
+                                           // be changed easily
+const struct PSF_font *default_font = &_binary_src_assets_terminus_psf_start;
 
 static struct framebuffer_info_internal fb_info;
 
-static uint32_t bg_color = BG;
-static uint32_t fg_color = FG;
+uint32_t fb_bg_color = BG;
+uint32_t fb_fg_color = FG;
 
 static inline void check_fb_bounds(void)
 {
@@ -48,30 +45,37 @@ static inline void check_fb_bounds(void)
         fb_info.x = 0;
         fb_info.y = (fb_info.y + 1) % max_lines;
     }
+    else if (fb_info.x < 0)
+    {
+        fb_info.x = max_col - 1;
+        fb_info.y = (fb_info.y - 1) % max_lines;
+    }
 }
-void k_putchar(char c, uint32_t *fb, size_t ppr, uint64_t x, uint64_t y)
+
+void k_internal_putc(char c, volatile uint32_t *fb, size_t ppr, uint64_t x, uint64_t y)
 {
 
-    uint8_t *glyph_addr = (uint8_t *)default_font + default_font->headersize +
-                          ((uint32_t)c * default_font->bytesperglyph);
+    const uint8_t *glyph_addr = (const uint8_t *)default_font + default_font->headersize +
+                                ((uint64_t)c * default_font->bytesperglyph);
 
     uint64_t offset = (y * default_font->height * ppr) + (x * default_font->width);
 
-    int bytesperline = (default_font->width + 7) / 8;
+    uint32_t bytesperline = (default_font->width + 7) / 8;
     for (y = 0; y < default_font->height; ++y)
     {
         uint64_t line = offset;
         for (x = 0; x < default_font->width; ++x)
         {
-            fb[line++] = (glyph_addr[x / 8] & (0x80 >> (x & 7))) ? fg_color : bg_color;
+            const uint8_t current_bit = 0x80U >> (x & 7U);
+            fb[line++] = (glyph_addr[x / 8] & current_bit) ? fb_fg_color : fb_bg_color;
         }
         glyph_addr += bytesperline;
         offset += ppr;
     }
 }
 
-void k_puts(const char *s, uint32_t *fb, size_t ppr, uint64_t x, uint64_t y, uint64_t off_x,
-            uint64_t off_y, uint64_t fbwidth, uint64_t fbheight)
+void k_internal_puts(const char *s, volatile uint32_t *fb, size_t ppr, uint64_t x, uint64_t y,
+                     uint64_t off_x, uint64_t off_y, uint64_t fbwidth, uint64_t fbheight)
 {
     const uint64_t max_col = fbwidth / default_font->width;
     const uint64_t max_lines = fbheight / default_font->height;
@@ -89,39 +93,28 @@ void k_puts(const char *s, uint32_t *fb, size_t ppr, uint64_t x, uint64_t y, uin
             x += 4;
             break;
         default:
-            k_putchar(*s, fb, ppr, tmp_x, tmp_y);
+            k_internal_putc(*s, fb, ppr, tmp_x, tmp_y);
         }
     }
 }
 
-void k_set_buff_settings(uint32_t *fb, size_t ppr, uint64_t fbwidth, uint64_t fbheight)
+void k_set_buff_settings(volatile uint32_t *fb, size_t ppr, uint64_t fbwidth, uint64_t fbheight)
 {
-
     fb_info = (struct framebuffer_info_internal){
         .fb = fb, .ppr = ppr, .x = 0, .width = fbwidth, .height = fbheight};
 }
 
-void k_dbg_puts(const char *str)
+void k_print(const char *str, uint32_t flags)
 {
-    k_dbg_print(str, 0);
-
-    const uint64_t max_lines = fb_info.height / default_font->height;
-    fb_info.y = (fb_info.y + 1) % max_lines;
-    fb_info.x = 0;
-}
-
-void k_dbg_print(const char *str, uint32_t flags)
-{
-
     // Two first bytes determine level of urgency:
     // None -> Warning -> Error -> Panic
-    if (flags & 0x1)
+    if (flags & URG1)
     {
-        fg_color = flags & 0x2 ? FGKERNFAULT : FGERR;
+        fb_fg_color = flags & URG2 ? FGKERNFAULT : FGERR;
     }
     else
     {
-        fg_color = flags & 0x2 ? FGWR : FG;
+        fb_fg_color = flags & URG2 ? FGWR : FG;
     }
 
     const uint64_t max_lines = fb_info.height / default_font->height;
@@ -139,43 +132,54 @@ void k_dbg_print(const char *str, uint32_t flags)
             fb_info.x += 4;
             break;
         default:
-            k_putchar(str[i], fb_info.fb, fb_info.ppr, fb_info.x, fb_info.y);
+            k_internal_putc(str[i], fb_info.fb, fb_info.ppr, fb_info.x, fb_info.y);
         }
     }
 }
+void k_puts(const char *str)
+{
+    k_print(str, 0);
 
-void k_dbg_putc(char c)
+    const uint64_t max_lines = fb_info.height / default_font->height;
+    fb_info.y = (fb_info.y + 1) % max_lines;
+    fb_info.x = 0;
+}
+
+void k_putc(char c)
 {
     check_fb_bounds();
-    const uint64_t max_lines = fb_info.height / default_font->height;
     switch (c)
     {
     case '\n':
-        fb_info.y = (fb_info.y + 1) % max_lines;
+        ++fb_info.y;
         fb_info.x = 0;
         break;
     case '\t':
         fb_info.x += 4;
         break;
     case '\b':
-        k_putchar(' ', fb_info.fb, fb_info.ppr, --fb_info.x, fb_info.y);
+        if (fb_info.x > 0)
+        {
+            --fb_info.x;
+        }
+        k_internal_putc(' ', fb_info.fb, fb_info.ppr, fb_info.x, fb_info.y);
         break;
     default:
-        k_putchar(c, fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
+        k_internal_putc(c, fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
     }
 }
 
-void k_dbg_printd(int64_t n)
+void k_printd(int64_t n)
 {
     check_fb_bounds();
     if (n == 0)
     {
-        k_putchar('0', fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
+        k_internal_putc('0', fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
         return;
     }
     if (n < 0)
     {
-        k_putchar('-', fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
+        k_internal_putc('-', fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
         n = -n;
     }
 
@@ -185,7 +189,7 @@ void k_dbg_printd(int64_t n)
 
     while (n > 0)
     {
-        to_print[idx++] = (n % 10) + '0';
+        to_print[idx++] = (char)(n % 10) + '0';
         n /= 10;
     }
     --idx;
@@ -193,21 +197,21 @@ void k_dbg_printd(int64_t n)
     while (idx >= 0)
     {
         check_fb_bounds();
-        k_putchar(to_print[idx--], fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
+        k_internal_putc(to_print[idx--], fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
     }
 }
 
-void k_dbg_printd_base(int64_t n, uint8_t base)
+void k_printd_base(int64_t n, uint8_t base)
 {
     check_fb_bounds();
     if (n == 0)
     {
-        k_putchar('0', fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
+        k_internal_putc('0', fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
         return;
     }
     if (n < 0)
     {
-        k_putchar('-', fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
+        k_internal_putc('-', fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
         n = -n;
     }
 
@@ -225,7 +229,7 @@ void k_dbg_printd_base(int64_t n, uint8_t base)
     while (idx >= 0)
     {
         check_fb_bounds();
-        k_putchar(to_print[idx--], fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
+        k_internal_putc(to_print[idx--], fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
     }
 }
 
