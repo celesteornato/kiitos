@@ -52,6 +52,7 @@ extern void isr_0(void);
 extern void isr_clock(void);
 extern void isr_kbinp(void);
 extern void isr_mouse(void);
+extern void isr_syscall(void);
 
 #undef ISR_STUB
 

@@ -1,10 +1,10 @@
 #include <basic/fbio.h>
 #include <basic/kio.h>
+#include <io/gpiodefs.h>
 #include <io/mouse.h>
 #include <stdbool.h>
 #include <stdint.h>
 
-#define PS2_PORT 0x60
 #define PS2_MOUSE_ENABLE 0xF4
 #define PS2_MOUSE_ACKNOWLEDGEMENT 0xFA
 

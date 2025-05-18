@@ -21,26 +21,22 @@
 .macro except n
     .globl isr_\n
     isr_\n:
-        cli
         pushaq
         cld    // C code following the sysV ABI requires DF to be clear on function entry
         mov $\n , %di
         call exception_handler
         popaq
-        sti
         iretq
 .endm
 
 .macro unhandled n
     .globl isr_\n
     isr_\n:
-        cli
         pushaq
         cld    // C code following the sysV ABI requires DF to be clear on function entry
         mov $\n , %di
         call unhandled
         popaq
-        sti
         iretq
 .endm
 

@@ -64,7 +64,13 @@ void kmain(void)
     k_dbg_puts("\nInitialising PS/2 Mouse...");
     ps2_mouse_init();
 
-    k_dbg_printd((char)syscall(0));
+    extern uint64_t (*internal_syscall)(uint8_t);
+    // syscall(0);
+    // get_kb_char();
+    // k_dbg_putc((char)internal_syscall(0));
+    uint64_t val = get_kb_char();
+    k_dbg_putc((char)val);
+    internal_syscall(0);
 
     hcf();
 }

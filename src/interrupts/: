@@ -1,0 +1,26 @@
+#include "io/keyboard.h"
+#include <stdint.h>
+
+/*
+ * OSes should be coded in B, actually
+ */
+union punned {
+    char c;
+    uint64_t return_val;
+};
+
+/* The return type here is... debatable.
+ * It is a uint64_t because syscall_internal's only goal is to put stuff into %rax.
+ * no function will actually read syscall_internal's return value, and the assembly code that
+ * will directly make syscalls will expect getting raw bytes back anyways.
+ */
+uint64_t syscall_internal(uint8_t call_code)
+{
+    switch (call_code)
+    {
+    case 0:
+
+        union punned to_return = {.c = get_kb_char()};
+        return to_return.return_val;
+    }
+}
