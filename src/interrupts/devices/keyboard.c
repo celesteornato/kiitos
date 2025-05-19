@@ -37,7 +37,7 @@ static uint64_t buff_to_keycode(void)
 
 void internal_kbinp(void)
 {
-    uint8_t scancode = inb(PS2_PORT);
+    uint8_t scancode = inb(PS2_DATA);
 
     keypress_buffer[keybuff_idx++] = scancode;
 

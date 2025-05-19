@@ -2,6 +2,7 @@
 *.s
 *.dbg
 *.iso
+*.img
 *.bin
 kiitos2
 *.swp

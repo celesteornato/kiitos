@@ -6,6 +6,7 @@
 #include <interrupts/pic.h>
 #include <io/keyboard.h>
 #include <io/mouse.h>
+#include <io/pci.h>
 #include <limine.h>
 #include <misc/art.h>
 #include <misc/colours.h>
@@ -59,6 +60,19 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
     k_puts("\nInitialising PS/2 Mouse...");
     ps2_mouse_init();
 
+    k_puts("\nFinding NVMe...");
+    uint8_t nvme_devnum = pci_find_nvme_devnum();
+    if (nvme_devnum == 255)
+    {
+        k_print("\tCould not find NVMe!\n", URG2);
+    }
+    else
+    {
+        k_puts("\tFound NVMe at device 0x");
+        k_printd_base(nvme_devnum, 16);
+    }
+
+    k_puts("\n\nStarting syscall loop...");
     while (1)
     {
         syscall_dbg(FBWRITE, syscall_dbg(KBINP, 0, 0, 0, 0), 1, 0, 0);
