@@ -149,8 +149,14 @@ $(OUTDIR)/imagedbg.iso: $(EXE).dbg limine/limine
 
 	limine/limine bios-install $(OUTDIR)/imagedbg.iso
 
-run: $(OUTDIR)/image.iso
-	qemu-system-x86_64 -D logs/qemu.log -d int,cpu_reset -M smm=off -no-reboot  -drive format=raw,file=$(OUTDIR)/image.iso
+nvm.img:
+	dd if=/dev/zero of=./nvm.img bs=1024 count=1024
+
+run: $(OUTDIR)/image.iso nvm.img
+	qemu-system-x86_64 -D logs/qemu.log -d int,cpu_reset -M smm=off -no-reboot \
+	-drive format=raw,file=$(OUTDIR)/image.iso \
+	-drive file=nvm.img,if=none,id=nvm -device nvme,serial=deadbeef,drive=nvm
+
 dbgrun: $(OUTDIR)/imagedbg.iso
 	qemu-system-x86_64 -D logs/qemu.log -d int,cpu_reset -M smm=off -s -S -drive format=raw,file=$(OUTDIR)/imagedbg.iso
 

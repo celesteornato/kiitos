@@ -32,23 +32,34 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
 
     // Ensure we got a framebuffer.
     struct limine_framebuffer_response *volatile response = framebuffer_request.response;
+    struct limine_hhdm_response *volatile hhdmresponse = hhdm_request.response;
+
     if (response == NULL || response->framebuffer_count < 1)
     {
         hcf();
     }
 
     struct limine_framebuffer *framebuffer = response->framebuffers[0];
+    uint64_t offset = hhdmresponse->offset;
 
     uint32_t *fb_ptr = framebuffer->address;
+
     const size_t ppr = pixel_per_row(framebuffer);
 
-    limine_remap(fb_ptr);
+    // Will need to be passed to CR3
+    //__asm__ volatile("int $0");
+    // void *page_0 = (void *)new_mem[0]->page_addr;
+
+    // memcpy(page_0, framebuffer, sizeof(*framebuffer));
+    // paging_init();
+
     k_set_buff_settings(fb_ptr, ppr, framebuffer->width, framebuffer->height);
 
     k_paint(BG);
     k_puts(ASCII_WELCOME);
 
     interrupt_disable();
+
     k_puts("\n\nInitialising CPU...");
     gdt_init();
     k_puts("\tGDT loaded!");
@@ -56,14 +67,15 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
     k_puts("\tIDT loaded!");
     pic_init();
     k_puts("\tPIC configured!");
-    interrupt_enable();
-    // k_puts("\nInitialising PS/2 Mouse...");
-    // ps2_mouse_init();
 
-    paging_init();
+    interrupt_enable();
+
+    k_puts("\nInitialising PS/2 Mouse...");
+    ps2_mouse_init();
 
     k_puts("\nConfiguring paging...");
 
+    k_printdu_base(offset, 16);
     k_puts("\nFinding NVMe...");
     char *nvme_addr = init_nvme();
 

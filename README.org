@@ -1,12 +1,12 @@
 #+title: KIITOS/2
 
-* No correlation to OS/2
+* Absolutely no correlation to OS/2
 This is the full rework of the original Kiitos from 2024, now with
 an actually well-made codebase and easy-to-setup interrupts, at the
-great cost of no longer having a bunch of ugly buggy nasm assembly, as well
-as not actually having keyboard input or anything.
+great cost of no longer having a bunch of ugly buggy nasm assembly.
+Also we removed the shell lol
 
-Good os anyways, Doom when
+Good OS anyways, Doom when
 
 * Dependencies
 ** Minimal requirements
@@ -16,7 +16,7 @@ Do not use just that, please.
 ** Probably needed for the barebones
 + clang/gcc
   + gcc will probably work for the forseeable future, however the officially-supported
-    compiler is clang.
+    compiler is clang at ~-O2~.
 + xorriso
 + git
   + Only required for the first ever ~make~, so as to clone and
@@ -29,6 +29,6 @@ Do not use just that, please.
 + clang
 + xorriso
 + git
-+ bmake
++ make (bmake)
 + qemu
 + gdb

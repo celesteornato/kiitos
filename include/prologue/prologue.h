@@ -3,10 +3,8 @@
 
 #include <limine.h>
 
-struct limine_framebuffer *limine_init(void);
-
 // Formatter struggles with this part
-__attribute__((used, section(".limine_requests"))) static volatile LIMINE_BASE_REVISION(3)
+__attribute__((used, section(".limine_requests"))) static volatile LIMINE_BASE_REVISION(0)
 
     __attribute__((used,
                    section(".limine_requests"))) static volatile struct limine_framebuffer_request

@@ -75,4 +75,7 @@ void k_printd(int64_t);
  */
 void k_printd_base(int64_t, uint8_t);
 
+/*k_printd_base for unsigned*/
+void k_printdu_base(uint64_t, uint8_t);
+
 #endif // FBIO_H_

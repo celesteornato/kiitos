@@ -1,3 +1,4 @@
+#include "memory/paging.h"
 #include <init/gdt.h>
 #include <stdint.h>
 
@@ -48,6 +49,7 @@ void gdt_init(void)
     set_descriptor(1, 0, 0xFFFFF, 0x9B, 0XA);
     set_descriptor(2, 0, 0xFFFFF, 0x97, 0X8);
 
+    limine_remap(gdt);
     __asm__("lgdt %0" : : "m"(gdtr));
     reload_segments();
 }

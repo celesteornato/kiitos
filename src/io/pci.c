@@ -16,10 +16,10 @@ uint32_t pci_get_dev_word(struct pci_config_message msg)
     return inl(PCI_CONFIG_OUT);
 }
 
-uint16_t pci_get_vendor(uint8_t dev_num)
+uint16_t pci_get_vendor(uint8_t dev_num, uint8_t bus)
 {
     const struct pci_config_message msg = {
-        .bus_number = 0,
+        .bus_number = bus,
         .dev_number = dev_num,
         .func_number = 0,
         .offset = 0x0,
@@ -30,10 +30,10 @@ uint16_t pci_get_vendor(uint8_t dev_num)
     // Vendor is in the 16 first bits of a PCI header
     return pci_get_dev_word(msg) & 0xFFFFU;
 }
-uint8_t pci_get_header_type(uint8_t dev_num)
+uint8_t pci_get_header_type(uint8_t dev_num, uint8_t bus)
 {
     const struct pci_config_message msg = {
-        .bus_number = 0,
+        .bus_number = bus,
         .dev_number = dev_num,
         .func_number = 0,
         .offset = 0xC,
@@ -45,11 +45,11 @@ uint8_t pci_get_header_type(uint8_t dev_num)
     return (pci_get_dev_word(msg) >> 16U) & 0xFFU;
 }
 
-uint32_t pci_get_bar(uint8_t dev_num, uint8_t bar_num)
+uint32_t pci_get_bar(uint8_t dev_num, uint8_t bus, uint8_t bar_num)
 {
     const uint8_t BAR0_OFFSET = 0x10;
     const struct pci_config_message msg = {
-        .bus_number = 0,
+        .bus_number = bus,
         .dev_number = dev_num,
         .func_number = 0,
         .offset = BAR0_OFFSET + (4 * bar_num),
@@ -61,11 +61,11 @@ uint32_t pci_get_bar(uint8_t dev_num, uint8_t bar_num)
     return (pci_get_dev_word(msg) >> 16U) & 0xFFU;
 }
 
-uint16_t pci_get_class_full(uint8_t dev_num)
+uint16_t pci_get_class_full(uint8_t dev_num, uint8_t bus)
 {
     const uint8_t CLASS_OFFSET = 0x8;
     const struct pci_config_message msg = {
-        .bus_number = 0,
+        .bus_number = bus,
         .dev_number = dev_num,
         .func_number = 0,
         .offset = CLASS_OFFSET,
@@ -77,16 +77,18 @@ uint16_t pci_get_class_full(uint8_t dev_num)
     return (pci_get_dev_word(msg) >> 16U) & 0xFFFFU;
 }
 
-// NVMe devices are identified by class code 1 subclass 8
-uint8_t pci_find_nvme_devnum(void)
+struct pci_device_location_info pci_find_matching_dev(uint8_t class, uint8_t subclass)
 {
-    const uint16_t EXPECTED_CL_SL = 0x0801;
-    for (uint8_t i = 0; i < PCI_MAX_DEV_NUM; ++i)
+    const uint16_t EXPECTED_CL_SL = (uint16_t)((uint16_t)class << 8U) | subclass;
+    for (uint8_t bus = 0; bus < PCI_MAX_BUS; ++bus)
     {
-        if (pci_get_class_full(i) == EXPECTED_CL_SL)
+        for (uint8_t dev_num = 0; dev_num < PCI_MAX_DEV_NUM; ++dev_num)
         {
-            return i;
+            if (pci_get_class_full(dev_num, bus) == EXPECTED_CL_SL)
+            {
+                return (struct pci_device_location_info){dev_num, bus};
+            }
         }
     }
-    return 255;
+    return (struct pci_device_location_info){255, 255};
 }

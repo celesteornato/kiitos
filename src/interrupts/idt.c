@@ -1,3 +1,4 @@
+#include "memory/paging.h"
 #include <interrupts/idt.h>
 #include <interrupts/interrupts.h>
 #include <stdint.h>
@@ -6,7 +7,7 @@ struct interrupt_descriptor {
     uint16_t isr_low;
     uint16_t kernel_cs;
     uint8_t ist;
-    uint8_t attributes;
+    uint8_t flags;
     uint16_t isr_mid;
     uint32_t isr_high;
     uint32_t reserved;
@@ -37,7 +38,7 @@ static void idt_set_descriptor(uint8_t vector, void (*isr)(void), uint8_t flags)
     descriptor->isr_low = isr_ptr & 0xFFFFU;
     descriptor->kernel_cs = 0x08U;
     descriptor->ist = 0;
-    descriptor->attributes = flags;
+    descriptor->flags = flags;
     descriptor->isr_mid = (uint16_t)((isr_ptr >> 16U) & 0xFFFFU);
     descriptor->isr_high = (uint32_t)((isr_ptr >> 32U) & 0xFFFFFFFFU);
     descriptor->reserved = 0;
@@ -54,6 +55,8 @@ void idt_init(void)
     }
     idt_set_descriptor(0x80, isr_syscall, 0x8F);
     vectors[0x80] = true;
+
+    limine_remap(idt);
 
     __asm__ volatile("lidt %0"
                      :

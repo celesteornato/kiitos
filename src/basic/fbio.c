@@ -2,7 +2,6 @@
 #include <misc/colours.h>
 #include <stdint.h>
 
-// Can be aligned but I don't know why and that scares me a bit
 struct PSF_font {
     uint32_t magic;         /* magic bytes to identify PSF */
     uint32_t version;       /* zero */
@@ -23,7 +22,7 @@ volatile struct framebuffer_info_internal {
     uint64_t height;
     _Atomic uint64_t x; // Atomic because an interrupt might trigger while x/y are being updated
     _Atomic uint64_t y;
-} __attribute__((aligned(64)));
+};
 
 extern const struct PSF_font
     _binary_src_assets_terminus_psf_start; // NOLINT as this is its object file name and it cannot
@@ -202,6 +201,37 @@ void k_printd(int64_t n)
 }
 
 void k_printd_base(int64_t n, uint8_t base)
+{
+    check_fb_bounds();
+    if (n == 0)
+    {
+        k_internal_putc('0', fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
+        return;
+    }
+    if (n < 0)
+    {
+        k_internal_putc('-', fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
+        n = -n;
+    }
+
+    char to_print[65] = {0};
+    int idx = 0;
+
+    while (n > 0)
+    {
+        char to_add = (n % base > 9) ? 'A' - 10 : '0';
+        to_print[idx++] = (char)(n % base) + to_add;
+        n /= base;
+    }
+    --idx;
+
+    while (idx >= 0)
+    {
+        check_fb_bounds();
+        k_internal_putc(to_print[idx--], fb_info.fb, fb_info.ppr, fb_info.x++, fb_info.y);
+    }
+}
+void k_printdu_base(uint64_t n, uint8_t base)
 {
     check_fb_bounds();
     if (n == 0)

@@ -20,5 +20,6 @@ Checks: '
     -cppcoreguidelines-avoid-non-const-global-variables,
     -bugprone-easily-swappable-parameters,
     -cppcoreguidelines-interfaces-global-init,
+    -performance-no-int-to-ptr,
     -misc-no-recursion
 '
