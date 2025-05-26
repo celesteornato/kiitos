@@ -25,6 +25,8 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
 
 [[noreturn]] void kmain(void)
 {
+    interrupt_disable();
+
     if (!LIMINE_BASE_REVISION_SUPPORTED)
     {
         hcf();
@@ -43,12 +45,12 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
     const size_t ppr = pixel_per_row(framebuffer);
 
     limine_remap(fb_ptr);
+
     k_set_buff_settings(fb_ptr, ppr, framebuffer->width, framebuffer->height);
 
     k_paint(BG);
     k_puts(ASCII_WELCOME);
 
-    interrupt_disable();
     k_puts("\n\nInitialising CPU...");
     gdt_init();
     k_puts("\tGDT loaded!");
@@ -60,12 +62,8 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
     // k_puts("\nInitialising PS/2 Mouse...");
     // ps2_mouse_init();
 
-    paging_init();
-
     k_puts("\nConfiguring paging...");
-
-    k_puts("\nFinding NVMe...");
-    char *nvme_addr = init_nvme();
+    paging_init();
 
     k_puts("\n\nStarting syscall loop...");
     while (1)

@@ -3,32 +3,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-// See Intel SDM Volume 3 chapter 5 section 5.5.2 @ figure 5-8
-struct cr3_pml4_descriptor {
-    uint16_t flags : 12;
-    size_t pml4_addr : 48;
-    uint8_t flags_high : 4;
-};
-struct pml4e {
-    uint16_t flags : 12;
-    size_t pml3_addr : 48;
-    uint8_t flags_high : 4;
-};
-struct pml3e {
-    uint16_t flags : 12;
-    size_t pml2_addr : 48;
-    uint8_t flags_high : 4;
-};
-struct pml2e {
-    uint16_t flags : 12;
-    size_t pml1_addr : 48;
-    uint8_t flags_high : 4;
-};
-struct pml1e {
-    uint16_t flags : 12;
-    size_t page_addr : 48;
-    uint8_t flags_high : 4;
-};
 union linear_address {
     size_t value;
     struct {

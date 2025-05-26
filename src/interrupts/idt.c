@@ -53,6 +53,7 @@ void idt_init(void)
         idt_set_descriptor(vector, isr_table[vector], 0x8E);
         vectors[vector] = true;
     }
+
     idt_set_descriptor(0x80, isr_syscall, 0x8F);
     vectors[0x80] = true;
 
