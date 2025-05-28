@@ -59,8 +59,6 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
     pic_init();
     k_puts("\tPIC configured!");
     interrupt_enable();
-    // k_puts("\nInitialising PS/2 Mouse...");
-    // ps2_mouse_init();
 
     k_puts("\nConfiguring paging...");
     paging_init();

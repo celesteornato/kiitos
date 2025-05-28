@@ -23,8 +23,6 @@ static struct interrupt_descriptor idt[IDT_MAX_DESCRIPTORS] = {0};
 static struct idtr idtr = {.base = idt,
                            .limit = ((uint16_t)sizeof(struct interrupt_descriptor) * 256) - 1};
 
-static bool vectors[IDT_MAX_DESCRIPTORS] = {false};
-
 void (*(isr_table[]))(void) = {
     isr_0,     isr_1,  isr_2,  isr_3,  isr_4,  isr_5,  isr_6,  isr_7,  isr_8,  isr_9,  isr_10,
     isr_11,    isr_12, isr_13, isr_14, isr_15, isr_16, isr_17, isr_18, isr_19, isr_20, isr_21,
@@ -48,14 +46,12 @@ void idt_init(void)
 {
     const uint8_t isr_table_len = sizeof(isr_table) / sizeof(isr_table[0]);
 
-    for (uint8_t vector = 0; vector < isr_table_len; vector++)
+    for (uint8_t i = 0; i < isr_table_len; i++)
     {
-        idt_set_descriptor(vector, isr_table[vector], 0x8E);
-        vectors[vector] = true;
+        idt_set_descriptor(i, isr_table[i], 0x8E);
     }
 
     idt_set_descriptor(0x80, isr_syscall, 0x8F);
-    vectors[0x80] = true;
 
     limine_remap(idt);
 
