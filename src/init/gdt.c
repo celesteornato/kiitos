@@ -2,12 +2,7 @@
 #include <init/gdt.h>
 #include <stdint.h>
 
-#define GDT_SIZE 3
-
-enum MASKS : uint32_t {
-    LOWER_32 = 0xFFFF,
-    LOWER_8 = 0xFF,
-};
+static constexpr int GDT_SIZE = 3;
 
 struct segment_descriptor {
     uint16_t limit_low;
@@ -31,6 +26,9 @@ extern void reload_segments(void); // defined in lgdt.S
 
 static void set_descriptor(int num, uint32_t base, uint32_t limit, uint8_t access, uint8_t flags)
 {
+    constexpr uint32_t LOWER_32 = 0xFFFF;
+    constexpr uint32_t LOWER_8 = 0xFF;
+
     gdt[num] = (struct segment_descriptor){
         .base_low = base & LOWER_32,
         .base_mid = (base >> 16U) & LOWER_8,

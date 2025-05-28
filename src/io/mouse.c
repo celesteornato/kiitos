@@ -5,7 +5,7 @@
 #include <io/mouse.h>
 #include <stdint.h>
 
-#define MAX_RETRIES 4
+static constexpr int MAX_RETRIES = 4;
 
 void ps2_mouse_init(void)
 {

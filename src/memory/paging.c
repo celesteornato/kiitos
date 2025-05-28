@@ -7,12 +7,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-enum : size_t {
-    NODE_PER_LAYER = 512, // size of pml4t, of each pdpt in each pml4, etc
-    PAGE_SIZE = 4096,
-    LIMINE_OFFSET = 0xFFFF800000000000,
-    PAGE_MASK = 0x000FFFFFFFFFFFFF000,
-};
+static constexpr int PAGE_SIZE = 4096;
+static constexpr size_t PAGE_MASK = 0x000FFFFFFFFFFFFF000;
 
 size_t pml4 = 0;
 size_t hhdm_offs = 0;
