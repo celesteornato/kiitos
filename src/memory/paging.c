@@ -161,4 +161,5 @@ void paging_init(void)
     // Finally, we load in the new pages.
     change_cr3((((pml4 - hhdm_offs) << 12U) & PAGE_MASK) | PRESENT | RW);
     // Code doesn't run past this line!!!!
+    __asm__ volatile("int $0"); // Will not trigger an exception
 }
