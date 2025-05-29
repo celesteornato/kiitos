@@ -3,17 +3,6 @@
 #include <stddef.h>
 #include <stdint.h>
 
-union linear_address {
-    size_t value;
-    struct {
-        size_t page_idx : 12;
-        size_t pml1_idx : 9;
-        size_t pml2_idx : 9;
-        size_t pml3_idx : 9;
-        size_t pml4_idx : 9;
-    };
-};
-
 enum MAP_FLAGS : uint64_t {
     PRESENT = 0x1,
     RW = 0x2,
@@ -27,7 +16,8 @@ enum MAP_FLAGS : uint64_t {
 };
 
 void paging_init(void);
-void map_page(size_t physaddr, size_t virtualaddr, uint16_t flags);
-void limine_remap(void *);
+void map_page(size_t physaddr, size_t virtualaddr, size_t flags);
+void limine_remap(const void *, size_t);
+size_t get_physaddr(size_t virtualaddr);
 
 #endif // PAGING_H_

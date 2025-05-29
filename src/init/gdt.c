@@ -47,7 +47,7 @@ void gdt_init(void)
     set_descriptor(1, 0, 0xFFFFF, 0x9B, 0XA);
     set_descriptor(2, 0, 0xFFFFF, 0x97, 0X8);
 
-    limine_remap(gdt);
+    limine_remap(gdt, sizeof(gdt));
     __asm__("lgdt %0" : : "m"(gdtr));
     reload_segments();
 }

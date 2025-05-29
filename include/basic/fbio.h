@@ -78,4 +78,11 @@ void k_printd_base(int64_t, uint8_t);
 /*k_printd_base for unsigned*/
 void k_printdu_base(uint64_t, uint8_t);
 
+/*k_printd_base for unsigned*/
+static void k_printhex(uint64_t n)
+{
+    k_printdu_base(n, 16);
+    k_puts("");
+}
+
 #endif // FBIO_H_

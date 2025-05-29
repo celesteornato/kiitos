@@ -53,7 +53,7 @@ void idt_init(void)
 
     idt_set_descriptor(0x80, isr_syscall, 0x8F);
 
-    limine_remap(idt);
+    limine_remap(idt, sizeof(idt) / 1);
 
     __asm__ volatile("lidt %0"
                      :

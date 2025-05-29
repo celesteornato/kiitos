@@ -19,7 +19,7 @@
 
 static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
 {
-    const int bits_per_bytes = 8;
+    constexpr int bits_per_bytes = 8;
     return bits_per_bytes * fb->pitch / fb->bpp;
 }
 
@@ -40,11 +40,9 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
     }
 
     struct limine_framebuffer *framebuffer = response->framebuffers[0];
-
     uint32_t *fb_ptr = framebuffer->address;
     const size_t ppr = pixel_per_row(framebuffer);
-
-    limine_remap(fb_ptr);
+    limine_remap(fb_ptr, 10);
 
     k_set_buff_settings(fb_ptr, ppr, framebuffer->width, framebuffer->height);
 
@@ -58,10 +56,10 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
     k_puts("\tIDT loaded!");
     pic_init();
     k_puts("\tPIC configured!");
-    interrupt_enable();
 
     k_puts("\nConfiguring paging...");
     paging_init();
+    interrupt_enable();
 
     k_puts("\n\nStarting syscall loop...");
     while (1)
