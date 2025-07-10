@@ -27,7 +27,11 @@ volatile struct framebuffer_info_internal {
 extern const struct PSF_font
     _binary_src_assets_terminus_psf_start; // NOLINT as this is its object file name and it cannot
                                            // be changed easily
-const struct PSF_font *default_font = &_binary_src_assets_terminus_psf_start;
+                                           // 
+extern const struct PSF_font
+    _binary_src_assets_spleen_psf_start; // NOLINT as this is its object file name and it cannot
+                                           // be changed easily
+const struct PSF_font *default_font = &_binary_src_assets_spleen_psf_start;
 
 static struct framebuffer_info_internal fb_info;
 
