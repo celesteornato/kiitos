@@ -1,7 +1,6 @@
 .PHONY: all clean debug dbgrun run archi
 .SUFFIXES: .o .c .S .s .od .psf
 
-
 WARNS=\
     -Wall\
     -Wextra\
@@ -23,7 +22,7 @@ WARNS=\
     -Wunreachable-code
 
 CFLAGS+= \
-	--std=c2x \
+	--std=c23 \
 	-ffreestanding \
 	-fno-stack-protector \
 	-fno-stack-check \
@@ -37,7 +36,6 @@ CFLAGS+= \
 	-mno-red-zone \
 	-mcmodel=kernel \
 	-O3 \
-	-flto \
 	-I./include
 
 LDFLAGS += \
@@ -50,7 +48,7 @@ LDFLAGS += \
 
 OUTDIR=bin
 BUILDDIR=build
-EXENAME=kiitos2
+EXENAME=kiitos3
 EXE=$(OUTDIR)/$(EXENAME)
 
 # You are free to change this variable to your favourite compiler, but only clang is officially supported.
@@ -68,18 +66,15 @@ OBJDBG+=${ASMSRCS:S/.S/.o/g}
 OBJDBG+=${FONTSRCS:S/.psf/.o/g}
 
 ### GNU Make ###
-SRCS+=$(wildcard src/*.c)
-SRCS+=$(wildcard src/*/*.c)
-ASMSRCS+=$(wildcard src/*.S)
-ASMSRCS+=$(wildcard src/*/*.S)
-FONTSRCS+=$(wildcard src/assets/*.psf)
+SRCS+=    $(shell find src -name '*.c')
+ASMSRCS+= $(shell find src -name '*.S')
+FONTSRCS+=$(shell find src -name '*.psf')
 OBJ+=$(patsubst %.c,%.o,$(SRCS))
 OBJ+=$(patsubst %.S,%.o,$(ASMSRCS))
 OBJ+=$(patsubst %.psf,%.o,$(FONTSRCS))
 OBJDBG+=$(patsubst %.c,%.od,$(SRCS))
 OBJDBG+=$(patsubst %.S,%.o,$(ASMSRCS))
 OBJDBG+=$(patsubst %.psf,%.o,$(FONTSRCS))
-
 
 DBGFLAGS=$(CFLAGS) $(WARNS) -g
 

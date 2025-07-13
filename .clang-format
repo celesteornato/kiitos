@@ -1,5 +1,6 @@
 BasedOnStyle: LLVM
 
+AllowShortFunctionsOnASingleLine: Empty
 BraceWrapping:
   AfterControlStatement: true
   AfterEnum:       false
@@ -11,6 +12,5 @@ BraceWrapping:
 BreakBeforeBraces: Custom
 
 UseTab: Never
-TabWidth: 4
 IndentWidth: 4
 ColumnLimit: 100

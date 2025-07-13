@@ -1,10 +1,11 @@
-#+title: KIITOS/2
+#+title: KIITOS/3
 
-* Absolutely no correlation to OS/2
-This is the full rework of the original Kiitos from 2024, now with
-an actually well-made codebase and easy-to-setup interrupts, at the
-great cost of no longer having a bunch of ugly buggy nasm assembly.
-Also we removed the shell lol
+* The better-structured sequel to Kiitos/2, the OS with absolutely no correlation to OS/2
+This is the full rework of the original Kiitos/2 from early 2025, now with
+an even better codebase, at the great cost of no longer having any code.
+We support GNU Make now, and at some point maybe the makefile will be good.
+
+Also I still don't have a shell lol
 
 Good OS anyways, Doom when
 

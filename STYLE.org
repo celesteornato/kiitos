@@ -1,0 +1,56 @@
+#+title: Style
+#+author: Céleste Ornato <celeste@ornato.com>
+#+date: Thu Jul 10 2025
+
+This document relates to coding style, and to the bits of formatting
+that are not handled by conventional formatters.
+
+* Naming
+C files are marked as ~.c~, headers are marked as ~.h~, all object files are marked as ~.o~, and assembly sources are ~.S~.
+C++ files are marked as trash.
+* Assembly blocks
+Calls to =__asm__= are obviously only accepted in architecture-dependent code.
+They should be volatile, have only one instruction per line, and one must concatenate string
+literals like so:
+#+begin_src C
+void hcf(void)
+{
+    __asm__ volatile("cli\n"
+                     "hlt");
+}
+#+end_src
+
+* Function signatures
+Use C23-style attributes in the declaration if relevant. You may either have
+named or unnamed parameters, but you cannot mix-and-match the styles inside
+a single signature. If there is any doubt as to the nature of a parameter,
+they should *all* be named.
+
+Functions defined in assembly must be prefixed with "=asm_=", and declared as
+~extern~.
+
+* Returning errors
+If a function can cause an error, one must have its error codes in an enum and "return"
+through an ~out~ parameter. The function must also be marked as =[[nodiscard]]=.
+
+This is what a function signature returning the type ~int~ must look like:
+#+begin_src C
+[[nodiscard]] enum FOO_ERR foo([your parameters here], int* out);
+#+end_src
+
+* Types
+No ~typedefs~, unless it is required for a type to be opaque for compatibility reasons
+in architecture-independent code. If one cannot guess the nature of a variable from its
+type, name it better.
+
+Never ~typedef~ structs, unions, or enums; please.
+
+** Special cases
+So as to be semantically correct as possible, you should try to apply the following rules:
++ Array index: ~ptrdiff_t~ / ~size_t~
+  + Why: The standard defines ptrdiff_t as the main type for indices, however signedness
+    can be annoying sometimes, so you can use size_t if it is more practical.
++ Length/Count of an array: ~size_t~
+  + Why: It's really annoying when I see a function that marks length as an ~int~.
++ Physical Address: ~uintptr_t~
+  + Why: These are shifted around a lot in x64, so we prefer unsigned over intptr_t.

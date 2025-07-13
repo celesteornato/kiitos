@@ -21,5 +21,7 @@ Checks: '
     -bugprone-easily-swappable-parameters,
     -cppcoreguidelines-interfaces-global-init,
     -performance-no-int-to-ptr,
-    -misc-no-recursion
+    -misc-no-recursion,
+    -hicpp-no-assembler,
+    -hicpp-signed-bitwise
 '

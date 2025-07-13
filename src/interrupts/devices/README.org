@@ -1,5 +1,0 @@
-#+title: Workings of the interrupt device directory
-#+author: Céleste Ornato
-
-*This directory contains C files without a header (mouse.c, keyboard.c). This is normal, internal_[FUNCTION NAME] functions get called inside the isr_[INTERRUPT NAME] functions.*
-As such, those functions should not be statically linked.

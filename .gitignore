@@ -1,3 +1,5 @@
+*.cpp
+*.cxx
 *.o
 *.s
 *.dbg
