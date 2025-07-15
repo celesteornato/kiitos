@@ -11,13 +11,13 @@ void arch_init(void)
     putsf("AMD64\n", COLOR, BLUE | GREEN, D_BLUE);
 
     __asm__ volatile("cli");
+
     puts("Setting up GDT...");
     gdt_init();
     puts("\tGDT set!");
     puts("Setting up IDT...");
     idt_init();
     puts("\tIDT set!");
-    __asm__ volatile("sti");
 
     vmm_init();
 
