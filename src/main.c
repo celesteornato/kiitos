@@ -1,12 +1,17 @@
 #include "amd64/amd64_init.h"
+#include "amd64/debug/logging.h"
+#include "fun/art.h"
 #include "fun/colors.h"
-#include <amd64/debug/logging.h>
-#include <fun/art.h>
-#include <limine.h>
-#include <limits.h>
-#include <prologue/prologue.h>
+#include "limine.h"
+#include "limits.h"
 #include <stddef.h>
 #include <stdint.h>
+
+[[gnu::used, gnu::section(".limine_requests")]] static volatile LIMINE_BASE_REVISION(2)
+
+    [[gnu::used,
+      gnu::section(".limine_requests")]] static volatile struct limine_framebuffer_request
+    framebuffer_request = {.id = LIMINE_FRAMEBUFFER_REQUEST, .revision = 0};
 
 static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
 {
@@ -15,8 +20,7 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
 
 [[noreturn]] void hcf(void)
 {
-    __asm__("cli\n"
-            "hlt");
+    __asm__("cli; hlt");
     while (true)
     {
     }
@@ -41,15 +45,14 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
 
     logging_config(fb_ptr, framebuffer->width, framebuffer->height, pixel_per_row(framebuffer));
     change_fb_colors(WHITE, D_BLUE);
-    logc('\f');
 
-    logs(foomp_art);
-    logs("Welcome to KiitOS/3!");
-    logc('\n');
+    putc('\f');
+    puts(foomp_art);
+    puts("Welcome to KiitOS/3!");
+    putc('\n');
 
-    logsf("Initialising arch-specific components - ", COLOR | NOBREAK, GREEN, D_BLUE);
+    putsf("Initialising arch-specific components - ", COLOR | NOBREAK, GREEN, D_BLUE);
     arch_init();
-    logs("Ooooh!!! Welcome to compatibility land!");
 
     hcf();
 }
