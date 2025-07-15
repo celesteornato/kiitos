@@ -1,5 +1,5 @@
-#include <amd64/debug/logging.h>
-#include <fun/colors.h>
+#include "amd64/debug/logging.h"
+#include "fun/colors.h"
 #include <limits.h>
 #include <stdarg.h>
 #include <stddef.h>
@@ -125,7 +125,7 @@ void change_fb_colors(uint32_t fg, uint32_t bg)
     fb_info.bg = bg;
 }
 
-void logc(char c)
+void putc(char c)
 {
     switch (c)
     {
@@ -155,41 +155,92 @@ void logc(char c)
 
 /* We could go without indices by just dereferencing and incrementing the pointer.
  * But come on, do you just *want* to be hostile to people reading your code ? */
-void logs(const char *str)
+void puts(const char *str)
 {
     for (int i = 0; str[i] != '\0'; ++i)
     {
-        logc(str[i]);
+        putc(str[i]);
     }
-    logc('\n');
+    putc('\n');
 }
 
-void logsf(const char *str, uint32_t flags, ...)
+static void print_number(uint64_t n, uint32_t radix)
 {
+    if (radix == 0)
+    {
+        putsf(" RADIX 0! ", NOBREAK | COLOR, RED, D_BLUE);
+    }
+    if (n == 0)
+    {
+        putc('0');
+        return;
+    }
+    if (n < 0)
+    {
+        putc('-');
+        n = -n;
+    }
+
+    char to_print[32] = {};
+    ptrdiff_t idx = 0;
+
+    while (n > 0)
+    {
+        if ((n % radix) < 10)
+        {
+            to_print[idx++] = (char)('0' + (n % radix));
+        }
+        else
+        {
+            to_print[idx++] = (char)('A' + (n % radix) - 10);
+        }
+        n /= radix;
+    }
+    idx -= 1;
+    while (idx >= 0)
+    {
+        putc(to_print[idx--]);
+    }
+}
+
+void putsf(const char *str, uint32_t flags, ...)
+{
+    va_list args;
+    va_start(args, 2);
+
     uint32_t old_fg = fb_info.fg;
     uint32_t old_bg = fb_info.bg;
 
     if (flags & COLOR)
     {
-        va_list args;
-        va_start(args, 2);
 
         fb_info.fg = va_arg(args, uint32_t);
         fb_info.bg = va_arg(args, uint32_t);
+    }
 
-        va_end(args);
+    uint32_t radix = 0;
+    if (flags & NUM)
+    {
+        radix = va_arg(args, uint32_t);
     }
 
     for (int i = 0; str[i] != '\0'; ++i)
     {
-        logc(str[i]);
+        if (str[i] == '%' && flags & NUM)
+        {
+            print_number(va_arg(args, uint64_t), radix);
+            continue;
+        }
+        putc(str[i]);
     }
 
     if (!(flags & NOBREAK))
     {
-        logc('\n');
+        putc('\n');
     }
 
     fb_info.fg = old_fg;
     fb_info.bg = old_bg;
+
+    va_end(args);
 }
