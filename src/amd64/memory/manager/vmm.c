@@ -33,8 +33,7 @@ static volatile struct limine_hhdm_request hhdm_request = {.id = LIMINE_HHDM_REQ
 static volatile struct limine_kernel_address_request kern_request = {
     .id = LIMINE_KERNEL_ADDRESS_REQUEST, .revision = 0};
 
-static constexpr size_t TABLE_SIZE = 512;
-alignas(4096) static uintptr_t pml4[TABLE_SIZE] = {};
+static uintptr_t *pml4 = nullptr; // This will be given a page at runtime
 
 /* Translates an virtaddress to its physical counterpart while the hhdm is active */
 static uintptr_t hhdm_phys(const void *addr)
@@ -141,6 +140,7 @@ static void switch_cr3(void)
 
 void vmm_init(void)
 {
+    pml4 = get_new_page();
     uintptr_t kern_add_p = kern_request.response->physical_base;
     uintptr_t kern_add_v = kern_request.response->virtual_base;
 
