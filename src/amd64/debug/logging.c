@@ -79,31 +79,6 @@ static void internal_putc(char c, volatile uint32_t fb[static 1], size_t ppr, si
     }
 }
 
-/* Yes, you can write this in a pretty way with just modulo operations,
- * but this is easier to understand */
-static void clamp_fbinfo(void)
-{
-    if (fb_info.x >= fb_info.width)
-    {
-        fb_info.x = 0;
-        fb_info.y += 1;
-    }
-    else if (fb_info.x < 0)
-    {
-        fb_info.x = fb_info.width - 1;
-        fb_info.y -= 1;
-    }
-
-    if (fb_info.y >= fb_info.height)
-    {
-        fb_info.y = 0;
-    }
-    else if (fb_info.y < 0)
-    {
-        fb_info.y = fb_info.height - 1;
-    }
-}
-
 void clear_fb(uint32_t bg)
 {
     size_t h = fb_info.height;
@@ -116,6 +91,53 @@ void clear_fb(uint32_t bg)
         {
             fb[x + (y * w)] = bg;
         }
+    }
+}
+
+static void clear_line(void)
+{
+    size_t w = fb_info.width;
+    size_t y = fb_info.y * default_font->height;
+    size_t max_y = (fb_info.y + 1) * default_font->height;
+
+    uint32_t bg = fb_info.bg;
+    volatile uint32_t *fb = fb_info.fb;
+    for (; y < fb_info.height && y < max_y; ++y)
+    {
+        for (size_t x = 0; x < w; ++x)
+        {
+            fb[x + (y * w)] = bg;
+        }
+    }
+}
+
+/* Yes, you can write this in a pretty way with just modulo operations,
+ * but this is easier to understand */
+static void clamp_fbinfo(void)
+{
+    if (fb_info.x >= fb_info.width / default_font->width)
+    {
+        fb_info.x = 0;
+        fb_info.y += 1;
+        clear_line();
+    }
+    if (fb_info.x < 0)
+    {
+        fb_info.x = fb_info.width - 1;
+        fb_info.y -= 1;
+        clear_line();
+    }
+
+    if (fb_info.y >= fb_info.height / default_font->height)
+    {
+        fb_info.y = 0;
+        fb_info.x = 0;
+        clear_line();
+    }
+    if (fb_info.y < 0)
+    {
+        fb_info.y = fb_info.height - 1;
+        clear_line();
     }
 }
 
@@ -132,6 +154,7 @@ void putc(char c)
     case '\n':
         fb_info.x = 0;
         fb_info.y += 1;
+        clear_line();
         break;
     case '\t':
         fb_info.x += 4;
