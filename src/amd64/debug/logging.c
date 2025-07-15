@@ -187,6 +187,11 @@ void puts(const char *str)
     putc('\n');
 }
 
+uintptr_t get_fb_address(void)
+{
+    return (uintptr_t)fb_info.fb;
+}
+
 static void print_number(uint64_t n, uint32_t radix)
 {
     if (radix == 0)

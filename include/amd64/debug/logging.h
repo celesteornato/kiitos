@@ -18,6 +18,8 @@ void clear_fb(uint32_t);
 void putc(char);
 void puts(const char *);
 
+uintptr_t get_fb_address(void);
+
 /*
  * Put String with Flags. Flags are given in dbgio_flags.
  * The variable arguments are evaluated in that order, and no extra argument is required without
