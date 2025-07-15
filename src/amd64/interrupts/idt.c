@@ -1,6 +1,5 @@
-#include <amd64/debug/logging.h>
-#include <amd64/interrupts/idt.h>
-#include <fun/colors.h>
+#include "amd64/interrupts/idt.h"
+#include "amd64/interrupts/handlers.h"
 #include <stdint.h>
 
 struct [[gnu::packed]] interrupt_descriptor {
@@ -14,12 +13,11 @@ struct [[gnu::packed]] interrupt_descriptor {
 };
 
 struct interrupt_descriptor idt[IDT_LENGtH];
+
 struct [[gnu::packed]] {
     uint16_t limit;
     struct interrupt_descriptor *base;
 } idtr = {.limit = sizeof(idt) - 1, .base = idt};
-
-void (*(vectors[1]))(void) = {nullptr};
 
 static void idt_set_descriptor(ptrdiff_t idx, void (*isr)(void), uint8_t flags)
 {
@@ -36,8 +34,10 @@ static void idt_set_descriptor(ptrdiff_t idx, void (*isr)(void), uint8_t flags)
 
 void idt_init(void)
 {
-    constexpr uint8_t isr_table_len = sizeof(vectors) / sizeof(vectors[0]);
-    idt_set_descriptor(0, vectors[0], 0x8E);
+    for (ptrdiff_t i = 0; i < 32; ++i)
+    {
+        idt_set_descriptor(i, except_fatal, 0x8E);
+    }
 
     __asm__ volatile("lidt %0" ::"m"(idtr));
     // sti is called in the arch_init function (amd64.c's)
