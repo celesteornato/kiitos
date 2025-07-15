@@ -22,7 +22,6 @@ enum pmm_err pmm_alloc(uintptr_t *out)
             }
             bitmap[row] |= (1 << bit);
             *out = (((row * bits_per_row) + bit) * page_size) + offset;
-            putsf("Allocating physaddr 0x%", NUM, 16, *out);
             return PMM_OK;
         }
     }
