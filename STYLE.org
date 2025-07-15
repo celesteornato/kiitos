@@ -1,6 +1,6 @@
 #+title: Style
 #+author: Céleste Ornato <celeste@ornato.com>
-#+date: Thu Jul 10 2025
+#+date: Mon Jul 14 2025
 
 This document relates to coding style, and to the bits of formatting
 that are not handled by conventional formatters.
@@ -8,17 +8,29 @@ that are not handled by conventional formatters.
 * Naming
 C files are marked as ~.c~, headers are marked as ~.h~, all object files are marked as ~.o~, and assembly sources are ~.S~.
 C++ files are marked as trash.
+
+Everything is in =snake_case=. No typedefs (see [[Types]]).
 * Assembly blocks
-Calls to =__asm__= are obviously only accepted in architecture-dependent code.
-They should be volatile, have only one instruction per line, and one must concatenate string
-literals like so:
+Calls to ~__asm__~ are obviously only accepted in architecture-dependent code.
+They must always be volatile.
+
+If an assembly call has three instructions or less, they should all be put on the same line like so:
 #+begin_src C
-void hcf(void)
-{
-    __asm__ volatile("cli\n"
-                     "hlt");
-}
+__asm__ volatile("cli; hlt");
 #+end_src
+If an assembly call has between four and ten instructions, it must only have one instruction per line,
+formatted like so:
+#+begin_src C
+__asm__ volatile("nop;"
+                 "sti;"
+                 "cli;"
+                 "hlt;");
+#+end_src
+If an assembly call has more than ten instructions, it should be put in an assembly source file instead of being
+put in an ~__asm__~ block.
+
+The ~[[gnu::naked]]~ attribute should only be used for simple function wrappers in context where the standard prologue/epilogue
+format of a C function cannot be used.
 
 * Function signatures
 Use C23-style attributes in the declaration if relevant. You may either have
@@ -26,7 +38,7 @@ named or unnamed parameters, but you cannot mix-and-match the styles inside
 a single signature. If there is any doubt as to the nature of a parameter,
 they should *all* be named.
 
-Functions defined in assembly must be prefixed with "=asm_=", and declared as
+Functions defined in assembly must be prefixed with ~asm_~, and declared as
 ~extern~.
 
 * Returning errors
@@ -35,7 +47,7 @@ through an ~out~ parameter. The function must also be marked as =[[nodiscard]]=.
 
 This is what a function signature returning the type ~int~ must look like:
 #+begin_src C
-[[nodiscard]] enum FOO_ERR foo([your parameters here], int* out);
+[[nodiscard]] enum foo_err foo([your parameters here], int* out);
 #+end_src
 
 * Types
