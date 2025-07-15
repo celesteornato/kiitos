@@ -1,4 +1,5 @@
 #include "amd64/interrupts/handlers.h"
+
 #include "amd64/debug/logging.h"
 #include "fun/colors.h"
 #include <stdint.h>
@@ -16,7 +17,6 @@ static void death(void)
     {
     }
 }
-[[gnu::naked]]
 void except_fatal(void)
 {
     __asm__ volatile("call %P0; iretq" ::"i"(death));
