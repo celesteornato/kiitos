@@ -43,12 +43,16 @@ Functions defined in assembly must be prefixed with ~asm_~, and declared as
 
 * Returning errors
 If a function can cause an error, one must have its error codes in an enum and "return"
-through an ~out~ parameter. The function must also be marked as =[[nodiscard]]=.
+through an ~out~ parameter. The function must also be marked as ~[[nodiscard]]~.
 
 This is what a function signature returning the type ~int~ must look like:
 #+begin_src C
-[[nodiscard]] enum foo_err foo([your parameters here], int* out);
+[[nodiscard]]
+enum foo_err foo([your parameters here], int* out);
 #+end_src
+
+The only exception to this rule is for functions that allocate virtual memory, as ~nullptr~ is already
+a fitting error value. You must still mark them as ~[[nodiscard]]~.
 
 * Types
 No ~typedefs~, unless it is required for a type to be opaque for compatibility reasons
