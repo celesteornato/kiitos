@@ -1,8 +1,9 @@
 #include "amd64/memory/manager/pmm.h"
+#include "amd64/debug/logging.h"
 #include <stddef.h>
 #include <stdint.h>
 
-#define countof(arr) (sizeof(arr) / sizeof(arr[1]))
+#define countof(arr) (sizeof(arr) / sizeof(arr[0]))
 
 static uint64_t bitmap[1000] = {};
 static constexpr int page_size = 4096;
@@ -21,6 +22,7 @@ enum pmm_err pmm_alloc(uintptr_t *out)
             }
             bitmap[row] |= (1 << bit);
             *out = (((row * bits_per_row) + bit) * page_size) + offset;
+            putsf("Allocating physaddr 0x%", NUM, 16, *out);
             return PMM_OK;
         }
     }
