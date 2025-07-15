@@ -7,7 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-[[gnu::used, gnu::section(".limine_requests")]] static volatile LIMINE_BASE_REVISION(2)
+[[gnu::used, gnu::section(".limine_requests")]] static volatile LIMINE_BASE_REVISION(3)
 
     [[gnu::used,
       gnu::section(".limine_requests")]] static volatile struct limine_framebuffer_request
