@@ -35,18 +35,29 @@ void vmm_init(void)
 
     for (uint64_t i = 0; i < mmr->entry_count; ++i)
     {
-        size_t len = mmr->entries[i]->length;
+        size_t len = (mmr->entries[i]->length / 4096) + 1;
+        uintptr_t base = mmr->entries[i]->base;
+        uint64_t type = mmr->entries[i]->type;
 
-        if (mmr->entries[i]->type == LIMINE_MEMMAP_KERNEL_AND_MODULES)
+        switch (type)
         {
-            hhdm_mmap_len(pml4, kern_add_p, kern_add_v, PRESENT | RDWR, 1 + (len / 4096));
-            continue;
+        case LIMINE_MEMMAP_KERNEL_AND_MODULES:
+            hhdm_mmap_len(pml4, kern_add_p, kern_add_v, GLOBAL | PRESENT | RDWR, len);
+            break;
+        case LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE:
+            // 4k-alignment is guaranteed so we can save one page here
+            hhdm_mmap_len(pml4, base, (uintptr_t)hhdm_virt(base), PRESENT | RDWR, len - 1);
+            break;
+        case LIMINE_MEMMAP_RESERVED:    // Writing over Reserved causes a #PF
+        case LIMINE_MEMMAP_FRAMEBUFFER: // We handle the FB on our own
+            break;
+        default:
+            hhdm_mmap_len(pml4, base, (uintptr_t)hhdm_virt(base), GLOBAL | PRESENT | RDWR, len);
         }
     }
 
-    putsf("Switching pagemap...", COLOR, RED, D_BLUE);
+    hhdm_mmap_len(pml4, hhdm_phys((void *)get_fb_address()), get_fb_address(),
+                  GLOBAL | PRESENT | RDWR, 1 + (get_fb_size() / 4096));
+
     switch_cr3();
-    while (true)
-    {
-    }
 }

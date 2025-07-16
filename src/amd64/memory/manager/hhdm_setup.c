@@ -32,7 +32,7 @@ uintptr_t hhdm_phys(const void *addr)
 }
 
 /* Translates a physaddress to its virtual counterpart while the hhdm is active */
-static void *hhdm_virt(uintptr_t addr)
+void *hhdm_virt(uintptr_t addr)
 {
     if (offset == 0)
     {

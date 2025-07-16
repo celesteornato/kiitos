@@ -19,7 +19,9 @@ void arch_init(void)
     idt_init();
     puts("\tIDT set!");
 
+    puts("Setting up new pagemap...");
     vmm_init();
+    puts("\tPagemap set!");
 
-    putc('\n');
+    // putc('\n');
 }

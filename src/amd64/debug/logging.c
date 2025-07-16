@@ -191,6 +191,10 @@ uintptr_t get_fb_address(void)
 {
     return (uintptr_t)fb_info.fb;
 }
+size_t get_fb_size(void)
+{
+    return (fb_info.height * fb_info.width) * sizeof(uint32_t);
+}
 
 static void print_number(uint64_t n, uint32_t radix)
 {

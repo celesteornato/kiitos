@@ -19,6 +19,8 @@ void putc(char);
 void puts(const char *);
 
 uintptr_t get_fb_address(void);
+/* Returns the size, in bytes, of the whole framebuffer area */
+uintptr_t get_fb_size(void);
 
 /*
  * Put String with Flags. Flags are given in dbgio_flags.

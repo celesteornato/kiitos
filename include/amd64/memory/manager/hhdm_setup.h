@@ -9,6 +9,9 @@
 /* Translates an virtaddress to its physical counterpart while the hhdm is active */
 uintptr_t hhdm_phys(const void *addr);
 
+/* Translates an physaddress to its virtual counterpart while the hhdm is active */
+void *hhdm_virt(uintptr_t addr);
+
 /* While the hhdm is active, get a new zeroed page from the pmm */
 void *hhdm_get_page(void);
 
