@@ -62,7 +62,9 @@ static void internal_putc(char c, volatile uint32_t fb[static 1], size_t ppr, si
     uint32_t bytesperline = default_font->width / 8;
 
     /* Algorithm:
-     *  For each line, we, for each byte, mask each bit
+     *  For each line, we, for each byte, mask each bit and mark it on the framebuffer as on/off
+     * accordingly then we go to the next byte, then we go to the next line (by both moving the
+     * offset AND moving the glyph one line down).
      * */
     for (size_t y = 0; y < default_font->height; ++y)
     {
