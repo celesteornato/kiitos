@@ -89,12 +89,15 @@ void hhdm_mmap(uintptr_t pml4[static 1], uintptr_t physaddr, uintptr_t vaddr, ui
 
     setup_page_layer(&pml4[pml4_idx], flags);
     uintptr_t *pml3 = hhdm_virt(pml4[pml4_idx]);
+    pml3[511] = hhdm_phys(pml3) | flags;
 
     setup_page_layer(&pml3[pml3_idx], flags);
     uintptr_t *pml2 = hhdm_virt(pml3[pml3_idx]);
+    pml2[511] = hhdm_phys(pml2) | flags;
 
     setup_page_layer(&pml2[pml2_idx], flags);
     uintptr_t *pml1 = hhdm_virt(pml2[pml2_idx]);
+    pml1[511] = hhdm_phys(pml1) | flags;
 
     pml1[pml1_idx] = physaddr_aligned | flags;
 }

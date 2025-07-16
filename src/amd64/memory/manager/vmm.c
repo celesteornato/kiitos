@@ -5,10 +5,12 @@
 #include "amd64/memory/manager/vmm.h"
 #include "amd64/debug/logging.h"
 #include "amd64/memory/manager/hhdm_setup.h"
+#include "amd64/memory/manager/pmm.h"
 #include "fun/colors.h"
 #include "limine.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 [[gnu::used, gnu::section(".limine_requests")]]
 static volatile struct limine_memmap_request memmap_request = {.id = LIMINE_MEMMAP_REQUEST,
@@ -17,17 +19,31 @@ static volatile struct limine_memmap_request memmap_request = {.id = LIMINE_MEMM
 static volatile struct limine_kernel_address_request kern_request = {
     .id = LIMINE_KERNEL_ADDRESS_REQUEST, .revision = 0};
 
-static uintptr_t *pml4 = nullptr; // This will be given a page at runtime
+static bool is_vmm_initialised = false;
 
-static void switch_cr3(void)
+static void switch_cr3(uintptr_t *pml4)
 {
     uintptr_t cr3 = hhdm_phys(pml4) | PRESENT | RDWR;
     __asm__ volatile("mov %0, %%cr3" ::"r"(cr3));
 }
+static void refresh_tlb(void)
+{
+    __asm__ volatile("mov %cr3, %rax; mov %rax, %cr3");
+}
 
 void vmm_init(void)
 {
-    pml4 = hhdm_get_page();
+    if (is_vmm_initialised)
+    {
+        putsf("Attempt to re-init vmm after it has already been done!", COLOR, RED, D_BLUE);
+        return;
+    }
+    constexpr uint64_t standard_flags = PRESENT | RDWR;
+    uintptr_t *pml4 = hhdm_get_page();
+
+    // We set up recursive mapping while we still have pml4.
+    pml4[511] = hhdm_phys(pml4) | standard_flags;
+
     uintptr_t kern_add_p = kern_request.response->physical_base;
     uintptr_t kern_add_v = kern_request.response->virtual_base;
 
@@ -42,7 +58,7 @@ void vmm_init(void)
         switch (type)
         {
         case LIMINE_MEMMAP_KERNEL_AND_MODULES:
-            hhdm_mmap_len(pml4, kern_add_p, kern_add_v, GLOBAL | PRESENT | RDWR, len);
+            hhdm_mmap_len(pml4, kern_add_p, kern_add_v, standard_flags, len);
             break;
         case LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE:
             // 4k-alignment is guaranteed so we can save one page here
@@ -52,12 +68,85 @@ void vmm_init(void)
         case LIMINE_MEMMAP_FRAMEBUFFER: // We handle the FB on our own
             break;
         default:
-            hhdm_mmap_len(pml4, base, (uintptr_t)hhdm_virt(base), GLOBAL | PRESENT | RDWR, len);
+            hhdm_mmap_len(pml4, base, (uintptr_t)hhdm_virt(base), standard_flags, len);
         }
     }
 
-    hhdm_mmap_len(pml4, hhdm_phys((void *)get_fb_address()), get_fb_address(),
-                  GLOBAL | PRESENT | RDWR, 1 + (get_fb_size() / 4096));
+    uintptr_t fb_padd = hhdm_phys((void *)get_fb_address());
+    putsf("%", NUM, 16, fb_padd);
+    hhdm_mmap_len(pml4, fb_padd, get_fb_address(), standard_flags, 1 + (get_fb_size() / 4096));
+    switch_cr3(pml4);
+}
 
-    switch_cr3();
+void mmap(uintptr_t physaddr, void *vaddr)
+{
+    uintptr_t physaddr_aligned = physaddr - (physaddr % 4096);
+
+    uintptr_t vaddr_as_int = (uintptr_t)vaddr;
+    size_t pml4_idx = (vaddr_as_int >> 39U) & 0x1FFU;
+    size_t pml3_idx = (vaddr_as_int >> 30U) & 0x1FFU;
+    size_t pml2_idx = (vaddr_as_int >> 21U) & 0x1FFU;
+    size_t pml1_idx = (vaddr_as_int >> 12U) & 0x1FFU;
+
+    // These gets bitshifted to 12 to the left before being treated as addresses
+    constexpr size_t pml4_base = 0xFFFFFFFFFFFFFFFF;
+    size_t pml3_base = (pml4_base << 9U) + (pml4_idx);
+    size_t pml2_base = (pml3_base << 9U) + (pml3_idx);
+    size_t pml1_base = (pml2_base << 9U) + (pml2_idx);
+
+    uintptr_t pml4 = pml4_base << 12U;
+    uintptr_t pml3 = pml3_base << 12U;
+    uintptr_t pml2 = pml2_base << 12U;
+    uintptr_t pml1 = pml1_base << 12U;
+
+    uintptr_t *pml4_addr = (uintptr_t *)pml4;
+    uintptr_t *pml3_addr = (uintptr_t *)pml3;
+    uintptr_t *pml2_addr = (uintptr_t *)pml2;
+    uintptr_t *pml1_addr = (uintptr_t *)pml1;
+
+    /* putsf("%", NUM, 16, vaddr_as_int); */
+    /* putsf("% : % : % : %", NUM, 16, pml4, pml3, pml2, pml1 + pml1_idx); */
+
+    if (!(pml4_addr[pml4_idx] & PRESENT))
+    {
+        if (pmm_alloc(&pml4_addr[pml4_idx]) != PMM_OK)
+        {
+            goto error;
+        }
+        pml4_addr[pml4_idx] |= PRESENT | RDWR;
+    }
+
+    pml3_addr[511] = pml4_addr[pml4_idx];
+    if (!(pml3_addr[pml3_idx] & PRESENT))
+    {
+        if (pmm_alloc(&pml3_addr[pml3_idx]) != PMM_OK)
+        {
+            goto error;
+        }
+        pml3_addr[pml3_idx] |= PRESENT | RDWR;
+    }
+
+    pml2_addr[511] = pml3_addr[pml3_idx];
+    if (!(pml2_addr[pml2_idx] & PRESENT))
+    {
+        if (pmm_alloc(&pml2_addr[pml2_idx]) != PMM_OK)
+        {
+            goto error;
+        }
+        pml2_addr[pml2_idx] |= PRESENT | RDWR;
+    }
+
+    pml1_addr[511] = pml2_addr[pml2_idx];
+    if (!(pml1_addr[pml1_idx] & PRESENT))
+    {
+        pml1_addr[pml1_idx] = physaddr_aligned | PRESENT | RDWR;
+    }
+    refresh_tlb();
+    return;
+
+error:
+    putsf("Encountered error allocating!", COLOR, RED, D_BLUE);
+    while (true)
+    {
+    }
 }

@@ -2,8 +2,10 @@
 #include "amd64/debug/logging.h"
 #include "amd64/interrupts/idt.h"
 #include "amd64/memory/gdt.h"
+#include "amd64/memory/manager/pmm.h"
 #include "amd64/memory/manager/vmm.h"
 #include "fun/colors.h"
+#include <stdint.h>
 
 void arch_init(void)
 {
@@ -22,6 +24,4 @@ void arch_init(void)
     puts("Setting up new pagemap...");
     vmm_init();
     puts("\tPagemap set!");
-
-    // putc('\n');
 }
