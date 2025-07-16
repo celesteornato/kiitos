@@ -51,7 +51,7 @@ void idt_init(void)
     {
         idt_set_descriptor(i, except_fatal, INTERRUPT | PRESENT);
     }
-    /* idt_set_descriptor(14, page_fault, TRAP | PRESENT); */
+    idt_set_descriptor(14, page_fault, TRAP | PRESENT);
 
     __asm__ volatile("lidt %0" ::"m"(idtr));
     // sti is called in the arch_init function (amd64.c's)

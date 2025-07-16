@@ -12,6 +12,7 @@ struct [[gnu::packed]] register_info {
     uint64_t rip;
 };
 
+[[noreturn]]
 static void death(void)
 {
     putsf("Oop, seems like you've died!", COLOR, RED | BLUE, D_BLUE);
@@ -19,13 +20,12 @@ static void death(void)
     {
     }
 }
+
+[[noreturn]]
 static void pf_handler(uintptr_t vaddr)
 {
-    putsf("#PF! Allocating %...", NUM, 16, vaddr);
-    uintptr_t cr3 = 0;
-    __asm__ volatile("mov %%cr3, %0" : "=r"(cr3));
-    uintptr_t *pml4 = hhdm_virt(cr3);
-    hhdm_mmap(pml4, hhdm_phys((void *)vaddr), vaddr, PRESENT | RDWR | GLOBAL);
+    putsf("#PF! At %", NUM, 16, vaddr);
+    death();
 }
 
 void except_fatal(void)
@@ -35,8 +35,8 @@ void except_fatal(void)
 
 void page_fault(void)
 {
-    __asm__ volatile("pop %%rdx;" // Consume the errcode, because we don't use it yet
-                     "mov %%cr2, %%rdx;"
+    __asm__ volatile("pop %%rdi;" // Consume the errcode, because we don't use it yet
+                     "mov %%cr2, %%rdi;"
                      "call %P0;"
                      "iretq"
                      :
