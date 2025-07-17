@@ -4,8 +4,8 @@
 
 enum pci_ports : uint16_t { PCI_CONFIG_IN = 0x0CF8, PCI_CONFIG_OUT = 0x0CFC };
 
-static const uint8_t PCI_MAX_DEV_NUM = 64;
-static const uint8_t PCI_MAX_BUS = 255;
+static constexpr uint8_t PCI_MAX_DEV_NUM = 64;
+static constexpr uint8_t PCI_MAX_BUS = 255;
 
 struct pci_config_message {
     uint8_t offset;
@@ -38,8 +38,7 @@ uint16_t pci_get_vendor(uint8_t dev_num, uint8_t bus)
 uint8_t pci_get_header_type(uint8_t dev_num, uint8_t bus)
 {
     uint8_t id = (uint8_t)(dev_num << 3U);
-    const struct pci_config_message msg = {
-        .offset = 0xC, .id = id, .bus_number = bus, .flags = 1 << 7};
+    struct pci_config_message msg = {.offset = 0xC, .id = id, .bus_number = bus, .flags = 1 << 7};
 
     // Header is in the 3rd byte of a PCI header at offset 0xC
     return (uint8_t)((pci_get_dev_word(msg) >> 16U) & 0xFFU);
