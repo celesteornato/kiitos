@@ -24,7 +24,7 @@ static void death(void)
 [[noreturn]]
 static void pf_handler(uintptr_t vaddr)
 {
-    putsf("#PF! At %", NUM, 16, vaddr);
+    putsf("#PF! At %", UNUM, 16, vaddr);
     death();
 }
 

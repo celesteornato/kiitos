@@ -63,7 +63,7 @@ static void internal_putc(char c, volatile uint32_t fb[static 1], size_t ppr, si
 
     /* Algorithm:
      *  For each line, we, for each byte, mask each bit and mark it on the framebuffer as on/off
-     * accordingly then we go to the next byte, then we go to the next line (by both moving the
+     * accordingly then we go to the next byte, then we go to the next line (by both moving the.
      * offset AND moving the glyph one line down).
      * */
     for (size_t y = 0; y < default_font->height; ++y)
@@ -71,7 +71,7 @@ static void internal_putc(char c, volatile uint32_t fb[static 1], size_t ppr, si
         for (size_t x = 0; x < default_font->width; ++x)
         {
             const uint8_t current_byte = glyph[x / 8];
-            constexpr const uint8_t highest_bit = 0x80U;
+            constexpr uint8_t highest_bit = 0x80U;
             const uint8_t current_bitmask = highest_bit >> (x & 7U);
 
             fb[offset + x] = (current_byte & current_bitmask) ? fg : bg;
@@ -123,22 +123,10 @@ static void clamp_fbinfo(void)
         fb_info.y += 1;
         clear_line();
     }
-    if (fb_info.x < 0)
-    {
-        fb_info.x = fb_info.width - 1;
-        fb_info.y -= 1;
-        clear_line();
-    }
-
     if (fb_info.y >= fb_info.height / default_font->height)
     {
         fb_info.y = 0;
         fb_info.x = 0;
-        clear_line();
-    }
-    if (fb_info.y < 0)
-    {
-        fb_info.y = fb_info.height - 1;
         clear_line();
     }
 }
@@ -198,7 +186,7 @@ size_t get_fb_size(void)
     return (fb_info.height * fb_info.width) * sizeof(uint32_t);
 }
 
-static void print_number(uint64_t n, uint32_t radix)
+static void print_unumber(uint64_t n, uint32_t radix)
 {
     if (radix == 0)
     {
@@ -208,11 +196,6 @@ static void print_number(uint64_t n, uint32_t radix)
     {
         putc('0');
         return;
-    }
-    if (n < 0)
-    {
-        putc('-');
-        n = -n;
     }
 
     char to_print[32] = {};
@@ -237,6 +220,16 @@ static void print_number(uint64_t n, uint32_t radix)
     }
 }
 
+static void print_number(int64_t n, uint32_t radix)
+{
+    if (n < 0)
+    {
+        putc('-');
+        n = -n;
+    }
+    print_unumber((uint64_t)n, radix);
+}
+
 void putsf(const char *str, uint32_t flags, ...)
 {
     va_list args;
@@ -253,18 +246,25 @@ void putsf(const char *str, uint32_t flags, ...)
     }
 
     uint32_t radix = 0;
-    if (flags & NUM)
+    if (flags & UNUM)
     {
         radix = va_arg(args, uint32_t);
     }
 
     for (int i = 0; str[i] != '\0'; ++i)
     {
-        if (str[i] == '%' && flags & NUM)
+
+        if (str[i] == '%' && flags & UNUM)
         {
-            print_number(va_arg(args, uint64_t), radix);
+            print_unumber(va_arg(args, uint64_t), radix);
             continue;
         }
+        if (str[i] == '%' && flags & NUM)
+        {
+            print_number(va_arg(args, int64_t), radix);
+            continue;
+        }
+
         putc(str[i]);
     }
 

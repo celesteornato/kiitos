@@ -7,7 +7,8 @@
 enum log_flags : uint32_t {
     NOBREAK = 1 << 0, // Removes the linebreak at the end of dbg_putsf
     COLOR = 1 << 1,   // Specifies custom dbg_putsf fg+bg colours
-    NUM = 1 << 2,     // Prints one number per % in the string
+    NUM = 1 << 2,     // Prints one number per % in the string, incompatible with UNUM
+    UNUM = 1 << 3,    // Prints one unsigned number per % in the string, incompatible with NUM
 };
 
 // You MUST call this function before any other one in this header!
@@ -27,7 +28,8 @@ uintptr_t get_fb_size(void);
  * The variable arguments are evaluated in that order, and no extra argument is required without
  * flags:
  ** Color: uint32_t fg, uint32_t bg
- ** Hex: uint32_t radix, uint64_t value for each '%' in string
+ ** NUM/UNUM: uint32_t radix, uint64_t value for each '%' in string (/!\ UNUM and NUM cannot be
+ *together)
  */
 void putsf(const char *str, uint32_t flags, ...);
 
