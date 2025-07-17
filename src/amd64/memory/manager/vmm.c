@@ -73,7 +73,6 @@ void vmm_init(void)
     }
 
     uintptr_t fb_padd = hhdm_phys((void *)get_fb_address());
-    putsf("%", NUM, 16, fb_padd);
     hhdm_mmap_len(pml4, fb_padd, get_fb_address(), standard_flags, 1 + (get_fb_size() / 4096));
     switch_cr3(pml4);
 }
@@ -88,58 +87,51 @@ void mmap(uintptr_t physaddr, void *vaddr)
     size_t pml2_idx = (vaddr_as_int >> 21U) & 0x1FFU;
     size_t pml1_idx = (vaddr_as_int >> 12U) & 0x1FFU;
 
-    // These gets bitshifted to 12 to the left before being treated as addresses
+    /*These gets bitshifted to 12 to the left before being treated as addresses, to simplify the
+     * masking process*/
     constexpr size_t pml4_base = 0xFFFFFFFFFFFFFFFF;
     size_t pml3_base = (pml4_base << 9U) + (pml4_idx);
     size_t pml2_base = (pml3_base << 9U) + (pml3_idx);
     size_t pml1_base = (pml2_base << 9U) + (pml2_idx);
 
-    uintptr_t pml4 = pml4_base << 12U;
-    uintptr_t pml3 = pml3_base << 12U;
-    uintptr_t pml2 = pml2_base << 12U;
-    uintptr_t pml1 = pml1_base << 12U;
+    uintptr_t *pml4 = (uintptr_t *)(pml4_base << 12U);
+    uintptr_t *pml3 = (uintptr_t *)(pml3_base << 12U);
+    uintptr_t *pml2 = (uintptr_t *)(pml2_base << 12U);
+    uintptr_t *pml1 = (uintptr_t *)(pml1_base << 12U);
 
-    uintptr_t *pml4_addr = (uintptr_t *)pml4;
-    uintptr_t *pml3_addr = (uintptr_t *)pml3;
-    uintptr_t *pml2_addr = (uintptr_t *)pml2;
-    uintptr_t *pml1_addr = (uintptr_t *)pml1;
-
-    /* putsf("%", NUM, 16, vaddr_as_int); */
-    /* putsf("% : % : % : %", NUM, 16, pml4, pml3, pml2, pml1 + pml1_idx); */
-
-    if (!(pml4_addr[pml4_idx] & PRESENT))
+    if (!(pml4[pml4_idx] & PRESENT))
     {
-        if (pmm_alloc(&pml4_addr[pml4_idx]) != PMM_OK)
+        if (pmm_alloc(&pml4[pml4_idx]) != PMM_OK)
         {
             goto error;
         }
-        pml4_addr[pml4_idx] |= PRESENT | RDWR;
+        pml4[pml4_idx] |= PRESENT | RDWR;
     }
 
-    pml3_addr[511] = pml4_addr[pml4_idx];
-    if (!(pml3_addr[pml3_idx] & PRESENT))
+    pml3[511] = pml4[pml4_idx];
+    if (!(pml3[pml3_idx] & PRESENT))
     {
-        if (pmm_alloc(&pml3_addr[pml3_idx]) != PMM_OK)
+        if (pmm_alloc(&pml3[pml3_idx]) != PMM_OK)
         {
             goto error;
         }
-        pml3_addr[pml3_idx] |= PRESENT | RDWR;
+        pml3[pml3_idx] |= PRESENT | RDWR;
     }
 
-    pml2_addr[511] = pml3_addr[pml3_idx];
-    if (!(pml2_addr[pml2_idx] & PRESENT))
+    pml2[511] = pml3[pml3_idx];
+    if (!(pml2[pml2_idx] & PRESENT))
     {
-        if (pmm_alloc(&pml2_addr[pml2_idx]) != PMM_OK)
+        if (pmm_alloc(&pml2[pml2_idx]) != PMM_OK)
         {
             goto error;
         }
-        pml2_addr[pml2_idx] |= PRESENT | RDWR;
+        pml2[pml2_idx] |= PRESENT | RDWR;
     }
 
-    pml1_addr[511] = pml2_addr[pml2_idx];
-    if (!(pml1_addr[pml1_idx] & PRESENT))
+    pml1[511] = pml2[pml2_idx];
+    if (!(pml1[pml1_idx] & PRESENT))
     {
-        pml1_addr[pml1_idx] = physaddr_aligned | PRESENT | RDWR;
+        pml1[pml1_idx] = physaddr_aligned | PRESENT | RDWR;
     }
     refresh_tlb();
     return;

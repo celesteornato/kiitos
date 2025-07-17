@@ -10,7 +10,7 @@ enum page_table_flags : uint64_t {
     PCD = 1 << 4,
     PAT = 1 << 7,
     GLOBAL = 1 << 8,
-    NX = 1LL << 63,
+    NX = 1ULL << 63,
 };
 
 void vmm_init(void);
