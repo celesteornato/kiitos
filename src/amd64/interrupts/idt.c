@@ -3,18 +3,18 @@
 #include <stdint.h>
 
 enum gate_desc_flag : uint16_t {
-    IST_0 = 1 << 0,
-    IST_1 = 1 << 1,
-    IST_2 = 1 << 2,
-    TYPE_0 = 1 << 8,
-    TYPE_1 = 1 << 9,
-    TYPE_2 = 1 << 10,
-    TYPE_3 = 1 << 11,
-    INTERRUPT = TYPE_1 | TYPE_2 | TYPE_3,
-    TRAP = TYPE_0 | TYPE_1 | TYPE_2 | TYPE_3,
-    DPL_0 = 1 << 13,
-    DPL_1 = 1 << 14,
-    PRESENT = 1 << 15,
+    GD_IST_0 = 1 << 0,
+    GD_IST_1 = 1 << 1,
+    GD_IST_2 = 1 << 2,
+    GD_TYPE_0 = 1 << 8,
+    GD_TYPE_1 = 1 << 9,
+    GD_TYPE_2 = 1 << 10,
+    GD_TYPE_3 = 1 << 11,
+    GD_INTERRUPT = GD_TYPE_1 | GD_TYPE_2 | GD_TYPE_3,
+    GD_TRAP = GD_TYPE_0 | GD_TYPE_1 | GD_TYPE_2 | GD_TYPE_3,
+    GD_DPL_0 = 1 << 13,
+    GD_DPL_1 = 1 << 14,
+    GD_PRESENT = 1 << 15,
 };
 
 struct [[gnu::packed]] interrupt_descriptor {
@@ -49,9 +49,9 @@ void idt_init(void)
 {
     for (ptrdiff_t i = 0; i < 32; ++i)
     {
-        idt_set_descriptor(i, except_fatal, INTERRUPT | PRESENT);
+        idt_set_descriptor(i, except_fatal, GD_INTERRUPT | GD_PRESENT);
     }
-    idt_set_descriptor(14, page_fault, TRAP | PRESENT);
+    idt_set_descriptor(14, page_fault, GD_TRAP | GD_PRESENT);
 
     __asm__ volatile("lidt %0" ::"m"(idtr));
     // sti is called in the arch_init function (amd64.c's)
