@@ -1,6 +1,15 @@
 .PHONY: all clean debug dbgrun run archi
 .SUFFIXES: .o .c .S .s .od .psf
 
+# You are free to change this variable to your favourite compiler, but only clang is officially supported.
+CC=clang
+
+OUTDIR=bin
+BUILDDIR=build
+EXENAME=kiitos3
+EXE=$(OUTDIR)/$(EXENAME)
+ARCH=AMD64 # Only AMD64 is available at the moment
+
 WARNS=\
     -Wall\
     -Wextra\
@@ -36,7 +45,8 @@ CFLAGS+= \
 	-mno-red-zone \
 	-mcmodel=kernel \
 	-O3 \
-	-I./include
+	-I./include \
+	-DKIITOS_BUILD_$(ARCH)
 
 LDFLAGS += \
 	-Wl,-m,elf_x86_64 \
@@ -45,14 +55,6 @@ LDFLAGS += \
     -static \
     -z max-page-size=0x1000 \
     -T src/linker.ld
-
-OUTDIR=bin
-BUILDDIR=build
-EXENAME=kiitos3
-EXE=$(OUTDIR)/$(EXENAME)
-
-# You are free to change this variable to your favourite compiler, but only clang is officially supported.
-CC=clang
 
 ### BSD Make ###
 SRCS=${:!find src -name '*.c'!}

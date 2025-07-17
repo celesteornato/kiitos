@@ -1,11 +1,14 @@
-#include "amd64/amd64_init.h"
-#include "amd64/debug/logging.h"
+#include "amd64/debug/logging.h" // I *think* this one is portable
 #include "fun/art.h"
 #include "fun/colors.h"
 #include "limine.h"
 #include "limits.h"
 #include <stddef.h>
 #include <stdint.h>
+
+#ifdef KIITOS_BUILD_AMD64
+#include "amd64/amd64_init.h"
+#endif
 
 [[gnu::used, gnu::section(".limine_requests")]] static volatile LIMINE_BASE_REVISION(3)
 
