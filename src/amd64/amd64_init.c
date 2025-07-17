@@ -1,10 +1,11 @@
 #include "amd64/amd64_init.h"
 #include "amd64/debug/logging.h"
 #include "amd64/interrupts/idt.h"
+#include "amd64/io/nvme/nvme_controls.h"
 #include "amd64/memory/gdt.h"
-#include "amd64/memory/manager/pmm.h"
 #include "amd64/memory/manager/vmm.h"
 #include "fun/colors.h"
+#include <stddef.h>
 #include <stdint.h>
 
 void arch_init(void)
@@ -24,4 +25,12 @@ void arch_init(void)
     puts("Setting up new pagemap...");
     vmm_init();
     puts("\tPagemap set!");
+
+    puts("Discovering NVMe...");
+    uintptr_t nvme_baddr = 0;
+    if (find_nvme_baddr(&nvme_baddr) != NVME_CONTROLS_OK)
+    {
+        putsf("Panic! Could not find nvme!", COLOR, RED, D_BLUE);
+    }
+    putsf("\tFound NVMe at base address 0x%!", UNUM, 16, nvme_baddr);
 }
