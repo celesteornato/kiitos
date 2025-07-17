@@ -3,14 +3,14 @@
 
 #include <stdint.h>
 enum page_table_flags : uint64_t {
-    PRESENT = 1 << 0,
-    RDWR = 1 << 1,
-    USER = 1 << 2,
-    PWT = 1 << 3,
-    PCD = 1 << 4,
-    PAT = 1 << 7,
-    GLOBAL = 1 << 8,
-    NX = 1ULL << 63,
+    PTE_PRESENT = 1 << 0,
+    PTE_RDWR = 1 << 1,
+    PTE_USER = 1 << 2,
+    PTE_PWT = 1 << 3,
+    PTE_PCD = 1 << 4,
+    PTE_PAT = 1 << 7,
+    PTE_GLOBAL = 1 << 8,
+    PTE_NX = 1ULL << 63,
 };
 
 void vmm_init(void);

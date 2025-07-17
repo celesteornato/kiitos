@@ -23,7 +23,7 @@ static bool is_vmm_initialised = false;
 
 static void switch_cr3(uintptr_t *pml4)
 {
-    uintptr_t cr3 = hhdm_phys(pml4) | PRESENT | RDWR;
+    uintptr_t cr3 = hhdm_phys(pml4) | PTE_PRESENT | PTE_RDWR;
     __asm__ volatile("mov %0, %%cr3" ::"r"(cr3));
 }
 static void refresh_tlb(void)
@@ -38,7 +38,7 @@ void vmm_init(void)
         putsf("Attempt to re-init vmm after it has already been done!", COLOR, RED, D_BLUE);
         return;
     }
-    constexpr uint64_t standard_flags = PRESENT | RDWR;
+    constexpr uint64_t standard_flags = PTE_PRESENT | PTE_RDWR;
     uintptr_t *pml4 = hhdm_get_page();
 
     // We set up recursive mapping while we still have pml4.
@@ -62,7 +62,7 @@ void vmm_init(void)
             break;
         case LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE:
             // 4k-alignment is guaranteed so we can save one page here
-            hhdm_mmap_len(pml4, base, (uintptr_t)hhdm_virt(base), PRESENT | RDWR, len - 1);
+            hhdm_mmap_len(pml4, base, (uintptr_t)hhdm_virt(base), PTE_PRESENT | PTE_RDWR, len - 1);
             break;
         case LIMINE_MEMMAP_RESERVED:    // Writing over Reserved causes a #PF
         case LIMINE_MEMMAP_FRAMEBUFFER: // We handle the FB on our own
@@ -88,7 +88,7 @@ void mmap(uintptr_t physaddr, void *vaddr)
     size_t pml1_idx = (vaddr_as_int >> 12U) & 0x1FFU;
 
     /*These gets bitshifted to 12 to the left before being treated as addresses, to simplify the
-     * masking process*/
+     * masking process */
     constexpr size_t pml4_base = 0xFFFFFFFFFFFFFFFF;
     size_t pml3_base = (pml4_base << 9U) + (pml4_idx);
     size_t pml2_base = (pml3_base << 9U) + (pml3_idx);
@@ -99,39 +99,39 @@ void mmap(uintptr_t physaddr, void *vaddr)
     uintptr_t *pml2 = (uintptr_t *)(pml2_base << 12U);
     uintptr_t *pml1 = (uintptr_t *)(pml1_base << 12U);
 
-    if (!(pml4[pml4_idx] & PRESENT))
+    if (!(pml4[pml4_idx] & PTE_PRESENT))
     {
         if (pmm_alloc(&pml4[pml4_idx]) != PMM_OK)
         {
             goto error;
         }
-        pml4[pml4_idx] |= PRESENT | RDWR;
+        pml4[pml4_idx] |= PTE_PRESENT | PTE_RDWR;
     }
 
     pml3[511] = pml4[pml4_idx];
-    if (!(pml3[pml3_idx] & PRESENT))
+    if (!(pml3[pml3_idx] & PTE_PRESENT))
     {
         if (pmm_alloc(&pml3[pml3_idx]) != PMM_OK)
         {
             goto error;
         }
-        pml3[pml3_idx] |= PRESENT | RDWR;
+        pml3[pml3_idx] |= PTE_PRESENT | PTE_RDWR;
     }
 
     pml2[511] = pml3[pml3_idx];
-    if (!(pml2[pml2_idx] & PRESENT))
+    if (!(pml2[pml2_idx] & PTE_PRESENT))
     {
         if (pmm_alloc(&pml2[pml2_idx]) != PMM_OK)
         {
             goto error;
         }
-        pml2[pml2_idx] |= PRESENT | RDWR;
+        pml2[pml2_idx] |= PTE_PRESENT | PTE_RDWR;
     }
 
     pml1[511] = pml2[pml2_idx];
-    if (!(pml1[pml1_idx] & PRESENT))
+    if (!(pml1[pml1_idx] & PTE_PRESENT))
     {
-        pml1[pml1_idx] = physaddr_aligned | PRESENT | RDWR;
+        pml1[pml1_idx] = physaddr_aligned | PTE_PRESENT | PTE_RDWR;
     }
     refresh_tlb();
     return;

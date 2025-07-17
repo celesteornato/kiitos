@@ -61,7 +61,7 @@ static void setup_page_layer(uintptr_t *pmle, size_t flags)
 {
     /* We only pass in elements of an initially-zeroed-out array, so this flag
      * cannot be wrongfully set */
-    if (*pmle & PRESENT)
+    if (*pmle & PTE_PRESENT)
     {
         return;
     }
