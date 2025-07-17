@@ -14,6 +14,7 @@ enum page_table_flags : uint64_t {
 };
 
 void vmm_init(void);
-void mmap(uintptr_t, void *);
+void mmap(uintptr_t paddr, void *vaddr, uint64_t flags);
+void munmap(void *);
 
 #endif // VMM_H_

@@ -77,9 +77,9 @@ void vmm_init(void)
     switch_cr3(pml4);
 }
 
-void mmap(uintptr_t physaddr, void *vaddr)
+void mmap(uintptr_t paddr, void *vaddr, uint64_t flags)
 {
-    uintptr_t physaddr_aligned = physaddr - (physaddr % 4096);
+    uintptr_t physaddr_aligned = paddr - (paddr % 4096);
 
     uintptr_t vaddr_as_int = (uintptr_t)vaddr;
     size_t pml4_idx = (vaddr_as_int >> 39U) & 0x1FFU;
@@ -105,7 +105,7 @@ void mmap(uintptr_t physaddr, void *vaddr)
         {
             goto error;
         }
-        pml4[pml4_idx] |= PTE_PRESENT | PTE_RDWR;
+        pml4[pml4_idx] |= PTE_PRESENT | flags;
     }
 
     pml3[511] = pml4[pml4_idx];
@@ -115,7 +115,7 @@ void mmap(uintptr_t physaddr, void *vaddr)
         {
             goto error;
         }
-        pml3[pml3_idx] |= PTE_PRESENT | PTE_RDWR;
+        pml3[pml3_idx] |= PTE_PRESENT | flags;
     }
 
     pml2[511] = pml3[pml3_idx];
@@ -125,14 +125,19 @@ void mmap(uintptr_t physaddr, void *vaddr)
         {
             goto error;
         }
-        pml2[pml2_idx] |= PTE_PRESENT | PTE_RDWR;
+        pml2[pml2_idx] |= PTE_PRESENT | flags;
     }
 
     pml1[511] = pml2[pml2_idx];
-    if (!(pml1[pml1_idx] & PTE_PRESENT))
+
+    // Note the condition is not the same here
+    if (pml1[pml1_idx] & PTE_PRESENT)
     {
-        pml1[pml1_idx] = physaddr_aligned | PTE_PRESENT | PTE_RDWR;
+        putsf("Trying to mmap to an already-existing vaddr!", COLOR, PURPLE, D_BLUE);
+        // goto error;
     }
+
+    pml1[pml1_idx] = physaddr_aligned | PTE_PRESENT | flags;
     refresh_tlb();
     return;
 
@@ -141,4 +146,51 @@ error:
     while (true)
     {
     }
+}
+
+void munmap(void *vaddr)
+{
+    uintptr_t vaddr_as_int = (uintptr_t)vaddr;
+    size_t pml4_idx = (vaddr_as_int >> 39U) & 0x1FFU;
+    size_t pml3_idx = (vaddr_as_int >> 30U) & 0x1FFU;
+    size_t pml2_idx = (vaddr_as_int >> 21U) & 0x1FFU;
+    size_t pml1_idx = (vaddr_as_int >> 12U) & 0x1FFU;
+
+    /*These gets bitshifted to 12 to the left before being treated as addresses, to simplify the
+     * masking process */
+    constexpr size_t pml4_base = 0xFFFFFFFFFFFFFFFF;
+    size_t pml3_base = (pml4_base << 9U) + (pml4_idx);
+    size_t pml2_base = (pml3_base << 9U) + (pml3_idx);
+    size_t pml1_base = (pml2_base << 9U) + (pml2_idx);
+    uintptr_t *pml4 = (uintptr_t *)(pml4_base << 12U);
+    uintptr_t *pml3 = (uintptr_t *)(pml3_base << 12U);
+    uintptr_t *pml2 = (uintptr_t *)(pml2_base << 12U);
+    uintptr_t *pml1 = (uintptr_t *)(pml1_base << 12U);
+
+    if (!(pml4[pml4_idx] & PTE_PRESENT))
+    {
+        return;
+    }
+    if (!(pml3[pml3_idx] & PTE_PRESENT))
+    {
+        return;
+    }
+    if (!(pml2[pml2_idx] & PTE_PRESENT))
+    {
+        return;
+    }
+    if (!(pml1[pml1_idx] & PTE_PRESENT))
+    {
+        return;
+    }
+
+    uintptr_t paddr = pml1[pml1_idx] & ~0xFFFULL;
+    if (pmm_free(paddr) != PMM_OK)
+    {
+        putsf("PMM Free error @ munmap : % isn't pmm_alloc-ed", UNUM, 16, paddr);
+        return;
+    }
+    pml1[pml1_idx] &= ~PTE_PRESENT;
+
+    refresh_tlb();
 }

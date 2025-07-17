@@ -34,7 +34,7 @@ enum pmm_err pmm_free(uintptr_t addr)
     size_t bit = (size_t)((addr - offset) % bits_per_row);
     size_t row = (addr - offset) / bits_per_row;
 
-    if ((bitmap[row] & bit) == 0)
+    if (row >= countof(bitmap) || !(bitmap[row] & bit))
     {
         return PMM_ALREADY_FREE;
     }
