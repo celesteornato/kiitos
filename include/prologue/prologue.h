@@ -1,7 +1,7 @@
 #ifndef PROLOGUE_H_
 #define PROLOGUE_H_
 
-#include <limine.h>
+#include "limine.h"
 
 // Formatter struggles with this part
 __attribute__((used, section(".limine_requests"))) static volatile LIMINE_BASE_REVISION(0)
