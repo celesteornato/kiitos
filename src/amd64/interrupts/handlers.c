@@ -1,8 +1,5 @@
 #include "amd64/interrupts/handlers.h"
-
-#include "amd64/debug/logging.h"
-#include "amd64/memory/manager/hhdm_setup.h"
-#include "amd64/memory/manager/vmm.h"
+#include "amd64/framebuffer/logging.h"
 #include "fun/colors.h"
 #include <stdint.h>
 

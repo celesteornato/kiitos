@@ -1,4 +1,4 @@
-#include "amd64/debug/logging.h" // I *think* this one is portable
+#include "amd64/framebuffer/logging.h" // I *think* this one is portable
 #include "fun/art.h"
 #include "fun/colors.h"
 #include "limine.h"

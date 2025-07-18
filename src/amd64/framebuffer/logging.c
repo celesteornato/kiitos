@@ -1,4 +1,4 @@
-#include "amd64/debug/logging.h"
+#include "amd64/framebuffer/logging.h"
 #include "fun/colors.h"
 #include <limits.h>
 #include <stdarg.h>

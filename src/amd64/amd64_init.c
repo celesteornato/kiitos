@@ -1,5 +1,5 @@
 #include "amd64/amd64_init.h"
-#include "amd64/debug/logging.h"
+#include "amd64/framebuffer/logging.h"
 #include "amd64/interrupts/idt.h"
 #include "amd64/io/nvme/nvme_controls.h"
 #include "amd64/memory/gdt.h"
@@ -31,6 +31,7 @@ void arch_init(void)
     if (find_nvme_baddr(&nvme_baddr) != NVME_CONTROLS_OK)
     {
         putsf("Panic! Could not find nvme!", COLOR, RED, D_BLUE);
+        __asm__("cli;hlt;");
     }
     putsf("\tFound NVMe at base address 0x%!", UNUM, 16, nvme_baddr);
 }

@@ -3,7 +3,7 @@
  * (physaddr << 12) | flags.
  */
 #include "amd64/memory/manager/vmm.h"
-#include "amd64/debug/logging.h"
+#include "amd64/framebuffer/logging.h"
 #include "amd64/memory/manager/hhdm_setup.h"
 #include "amd64/memory/manager/pmm.h"
 #include "fun/colors.h"
