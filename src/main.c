@@ -23,7 +23,6 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
 
 [[noreturn]] void hcf(void)
 {
-    __asm__("cli; hlt");
     while (true)
     {
     }
@@ -35,8 +34,6 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
     {
         hcf();
     }
-
-    // Ensure we got a framebuffer.
     struct limine_framebuffer_response *volatile response = framebuffer_request.response;
     if (response == nullptr || response->framebuffer_count < 1)
     {
