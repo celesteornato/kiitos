@@ -19,6 +19,7 @@ enum segdesc_flags {
     D_WRITE = 1 << 9,
     CONFORMING = 1 << 10,
     CODE_SEG = 1 << 11,
+    GDT_SEG = 1 << 12,
     DATA_SEG = 0, // Just to make reading easier
     DPL_0 = 1 << 13,
     DPL_1 = 1 << 14,
@@ -28,31 +29,21 @@ enum segdesc_flags {
     GRANULARITY = 1 << 23,
 };
 
-static struct cd_segment_descriptor gdt[5] = {};
+static constexpr struct cd_segment_descriptor gdt[] = {
+    {0},
+    {.flags = ACCESS | C_READ | CODE_SEG | GDT_SEG | PRESENT | LONG | GRANULARITY},
+    {.flags = ACCESS | D_WRITE | DATA_SEG | GDT_SEG | PRESENT | LONG | GRANULARITY},
+    {.flags = USER | ACCESS | C_READ | CODE_SEG | GDT_SEG | PRESENT | LONG | GRANULARITY},
+    {.flags = USER | ACCESS | D_WRITE | DATA_SEG | GDT_SEG | PRESENT | LONG | GRANULARITY},
+};
 
 struct [[gnu::packed]] {
     uint16_t limit;
-    struct cd_segment_descriptor *base;
+    const struct cd_segment_descriptor *base;
 } gdtr = {.limit = sizeof(gdt) - 1, .base = gdt};
-
-// See segment desc. definition for why we don't bother with most sections.
-static void set_cd_descriptor(ptrdiff_t idx, uint32_t flags)
-{
-    constexpr int ONE_BIT = 1 << 12;
-
-    // Everything else is ignored, so we can just set flags
-    gdt[idx].flags = flags | ONE_BIT;
-}
 
 void gdt_init(void)
 {
-    set_cd_descriptor(0, 0);
-    set_cd_descriptor(1, ACCESS | C_READ | CODE_SEG | PRESENT | LONG | GRANULARITY);
-    set_cd_descriptor(2, ACCESS | D_WRITE | DATA_SEG | PRESENT | LONG | GRANULARITY);
-
-    set_cd_descriptor(3, USER | ACCESS | C_READ | CODE_SEG | PRESENT | LONG | GRANULARITY);
-    set_cd_descriptor(4, USER | ACCESS | D_WRITE | DATA_SEG | PRESENT | LONG | GRANULARITY);
-
     __asm__ volatile("lgdt %0" ::"m"(gdtr));
     asm_reload_segments();
 }
