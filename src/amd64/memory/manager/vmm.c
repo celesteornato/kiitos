@@ -12,6 +12,8 @@
 #include <stdint.h>
 #include <string.h>
 
+static constexpr size_t PAGE_SIZE = 4096;
+
 [[gnu::used, gnu::section(".limine_requests")]]
 static volatile struct limine_memmap_request memmap_request = {.id = LIMINE_MEMMAP_REQUEST,
                                                                .revision = 0};
@@ -21,12 +23,12 @@ static volatile struct limine_kernel_address_request kern_request = {
 
 static bool is_vmm_initialised = false;
 
-static void switch_cr3(uintptr_t *pml4)
+static inline void switch_cr3(uintptr_t *pml4)
 {
     uintptr_t cr3 = hhdm_phys(pml4) | PTE_PRESENT | PTE_RDWR;
     __asm__ volatile("mov %0, %%cr3" ::"r"(cr3));
 }
-static void refresh_tlb(void)
+static inline void refresh_tlb(void)
 {
     __asm__ volatile("mov %cr3, %rax; mov %rax, %cr3");
 }
@@ -35,13 +37,14 @@ void vmm_init(void)
 {
     if (is_vmm_initialised)
     {
-        putsf("Attempt to re-init vmm after it has already been done!", COLOR, RED, D_BLUE);
+        putsf("Attempt to re-init vmm after it has already been done!", COLOR, COLOR_RED,
+              COLOR_D_BLUE);
         return;
     }
     constexpr uint64_t standard_flags = PTE_PRESENT | PTE_RDWR;
     uintptr_t *pml4 = hhdm_get_page();
 
-    // We set up recursive mapping while we still have pml4.
+    // We set up recursive mapping while we still have pml4 on hand.
     pml4[511] = hhdm_phys(pml4) | standard_flags;
 
     uintptr_t kern_add_p = kern_request.response->physical_base;
@@ -64,11 +67,8 @@ void vmm_init(void)
             // 4k-alignment is guaranteed so we can save one page here
             hhdm_mmap_len(pml4, base, (uintptr_t)hhdm_virt(base), PTE_PRESENT | PTE_RDWR, len - 1);
             break;
-        case LIMINE_MEMMAP_RESERVED:    // Writing over Reserved causes a #PF
-        case LIMINE_MEMMAP_FRAMEBUFFER: // We handle the FB on our own
-            break;
         default:
-            hhdm_mmap_len(pml4, base, (uintptr_t)hhdm_virt(base), standard_flags, len);
+            break;
         }
     }
 
@@ -106,6 +106,7 @@ void mmap(uintptr_t paddr, void *vaddr, uint64_t flags)
             goto error;
         }
         pml4[pml4_idx] |= PTE_PRESENT | flags;
+        memset(pml3, 0, PAGE_SIZE);
     }
 
     pml3[511] = pml4[pml4_idx];
@@ -116,6 +117,7 @@ void mmap(uintptr_t paddr, void *vaddr, uint64_t flags)
             goto error;
         }
         pml3[pml3_idx] |= PTE_PRESENT | flags;
+        memset(pml2, 0, PAGE_SIZE);
     }
 
     pml2[511] = pml3[pml3_idx];
@@ -126,6 +128,7 @@ void mmap(uintptr_t paddr, void *vaddr, uint64_t flags)
             goto error;
         }
         pml2[pml2_idx] |= PTE_PRESENT | flags;
+        memset(pml1, 0, PAGE_SIZE);
     }
 
     pml1[511] = pml2[pml2_idx];
@@ -133,8 +136,10 @@ void mmap(uintptr_t paddr, void *vaddr, uint64_t flags)
     // Note the condition is not the same here
     if (pml1[pml1_idx] & PTE_PRESENT)
     {
-        putsf("Trying to mmap to an already-existing vaddr!", COLOR, PURPLE, D_BLUE);
-        // goto error;
+        putsf("Trying to mmap to an already-existing vaddr!  PML1 of 0x% for vadd 0x%",
+              COLOR | UNUM, COLOR_PURPLE, COLOR_D_BLUE, 16, pml1[pml1_idx], vaddr);
+        putsf("indices: % % % %", UNUM, 16, pml1_idx, pml2_idx, pml3_idx, pml4_idx);
+        goto error;
     }
 
     pml1[pml1_idx] = physaddr_aligned | PTE_PRESENT | flags;
@@ -142,7 +147,7 @@ void mmap(uintptr_t paddr, void *vaddr, uint64_t flags)
     return;
 
 error:
-    putsf("Encountered error allocating!", COLOR, RED, D_BLUE);
+    putsf("Encountered error allocating!", COLOR, COLOR_RED, COLOR_D_BLUE);
     while (true)
     {
     }
@@ -190,7 +195,7 @@ void munmap(void *vaddr)
         putsf("PMM Free error @ munmap : % isn't pmm_alloc-ed", UNUM, 16, paddr);
         return;
     }
-    pml1[pml1_idx] &= ~PTE_PRESENT;
+    pml1[pml1_idx] = 0;
 
     refresh_tlb();
 }
