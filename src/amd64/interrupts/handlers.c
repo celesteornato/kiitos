@@ -12,7 +12,7 @@ struct [[gnu::packed]] register_info {
 [[noreturn]]
 static void death(void)
 {
-    putsf("Oop, seems like you've died!", COLOR, RED | BLUE, D_BLUE);
+    putsf("Oop, seems like you've died!", COLOR, COLOR_RED | COLOR_BLUE, COLOR_D_BLUE);
     while (true)
     {
     }

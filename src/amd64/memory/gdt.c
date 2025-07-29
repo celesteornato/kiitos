@@ -14,27 +14,27 @@ struct [[gnu::packed]] cd_segment_descriptor {
 };
 
 enum segdesc_flags {
-    ACCESS = 1 << 8,
-    C_READ = 1 << 9,
-    D_WRITE = 1 << 9,
-    CONFORMING = 1 << 10,
-    CODE_SEG = 1 << 11,
-    GDT_SEG = 1 << 12,
-    DATA_SEG = 0, // Just to make reading easier
-    DPL_0 = 1 << 13,
-    DPL_1 = 1 << 14,
-    USER = DPL_0 | DPL_1, // Who uses ring 1/2 anyways, amiright ?
-    PRESENT = 1 << 15,
-    LONG = 1 << 21,
-    GRANULARITY = 1 << 23,
+    SD_ACCESS = 1 << 8,
+    SD_READ = 1 << 9,
+    SD_WRITE = 1 << 9,
+    SD_CONFORMING = 1 << 10,
+    SD_CODE = 1 << 11,
+    SD_GDTE = 1 << 12,
+    SD_DATA = 0, // Just to make reading easier
+    SD_DPL_0 = 1 << 13,
+    SD_DPL_1 = 1 << 14,
+    SD_USER = SD_DPL_0 | SD_DPL_1, // Who uses ring 1/2 anyways, amiright ?
+    SD_PRESENT = 1 << 15,
+    SD_LONG = 1 << 21,
+    SD_GRAN = 1 << 23,
 };
 
 static constexpr struct cd_segment_descriptor gdt[] = {
     {0},
-    {.flags = ACCESS | C_READ | CODE_SEG | GDT_SEG | PRESENT | LONG | GRANULARITY},
-    {.flags = ACCESS | D_WRITE | DATA_SEG | GDT_SEG | PRESENT | LONG | GRANULARITY},
-    {.flags = USER | ACCESS | C_READ | CODE_SEG | GDT_SEG | PRESENT | LONG | GRANULARITY},
-    {.flags = USER | ACCESS | D_WRITE | DATA_SEG | GDT_SEG | PRESENT | LONG | GRANULARITY},
+    {.flags = SD_ACCESS | SD_READ | SD_CODE | SD_GDTE | SD_PRESENT | SD_LONG | SD_GRAN},
+    {.flags = SD_ACCESS | SD_WRITE | SD_DATA | SD_GDTE | SD_PRESENT | SD_LONG | SD_GRAN},
+    {.flags = SD_USER | SD_ACCESS | SD_READ | SD_CODE | SD_GDTE | SD_PRESENT | SD_LONG | SD_GRAN},
+    {.flags = SD_USER | SD_ACCESS | SD_WRITE | SD_DATA | SD_GDTE | SD_PRESENT | SD_LONG | SD_GRAN},
 };
 
 struct [[gnu::packed]] {

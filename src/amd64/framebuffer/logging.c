@@ -34,8 +34,8 @@ extern const struct psf_font _binary_src_assets_spleen_psf_start; // NOLINT;
 
 const struct psf_font *default_font = &_binary_src_assets_spleen_psf_start;
 
-static constexpr uint32_t DEFAULT_BG = D_BLUE;
-static constexpr uint32_t DEFAULT_FG = WHITE;
+static constexpr uint32_t DEFAULT_BG = COLOR_D_BLUE;
+static constexpr uint32_t DEFAULT_FG = COLOR_WHITE;
 
 void logging_config(volatile uint32_t *fb, size_t width, size_t height, size_t ppr)
 {
@@ -190,7 +190,7 @@ static void print_unumber(uint64_t n, uint32_t radix)
 {
     if (radix == 0)
     {
-        putsf(" RADIX 0! ", NOBREAK | COLOR, RED, D_BLUE);
+        putsf(" RADIX 0! ", NOBREAK | COLOR, COLOR_RED, COLOR_D_BLUE);
     }
     if (n == 0)
     {

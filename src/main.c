@@ -44,14 +44,14 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
     uint32_t *fb_ptr = framebuffer->address;
 
     logging_config(fb_ptr, framebuffer->width, framebuffer->height, pixel_per_row(framebuffer));
-    change_fb_colors(WHITE, D_BLUE);
+    change_fb_colors(COLOR_WHITE, COLOR_D_BLUE);
 
     putc('\f');
     puts(foomp_art);
     puts("Welcome to KiitOS/3!");
     putc('\n');
 
-    putsf("Initialising arch-specific components - ", COLOR | NOBREAK, GREEN, D_BLUE);
+    putsf("Initialising arch-specific components - ", COLOR | NOBREAK, COLOR_GREEN, COLOR_D_BLUE);
     arch_init();
 
     hcf();
