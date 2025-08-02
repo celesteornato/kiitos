@@ -8,10 +8,6 @@ extern void asm_reload_segments(void);
  * Everything but flags are ignored in long mode. Flags are 32-bit to adhere to the AMD manual's
  * convention.
  * */
-struct [[gnu::packed]] cd_segment_descriptor {
-    uint32_t ignored;
-    uint32_t flags;
-};
 
 enum segdesc_flags {
     SD_ACCESS = 1 << 8,
@@ -29,6 +25,11 @@ enum segdesc_flags {
     SD_GRAN = 1 << 23,
 };
 
+struct [[gnu::packed]] cd_segment_descriptor {
+    uint32_t ignored;
+    uint32_t flags;
+};
+
 static constexpr struct cd_segment_descriptor gdt[] = {
     {0},
     {.flags = SD_ACCESS | SD_READ | SD_CODE | SD_GDTE | SD_PRESENT | SD_LONG | SD_GRAN},
@@ -37,7 +38,9 @@ static constexpr struct cd_segment_descriptor gdt[] = {
     {.flags = SD_USER | SD_ACCESS | SD_WRITE | SD_DATA | SD_GDTE | SD_PRESENT | SD_LONG | SD_GRAN},
 };
 
-struct [[gnu::packed]] {
+/* C23 constexpr limitations do not allow for this to be a constexpr, if that is possible in the
+ * future it's probably a good idea to do it */
+static const struct [[gnu::packed]] {
     uint16_t limit;
     const struct cd_segment_descriptor *base;
 } gdtr = {.limit = sizeof(gdt) - 1, .base = gdt};
