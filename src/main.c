@@ -21,14 +21,16 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
     return (CHAR_BIT * fb->pitch) / fb->bpp;
 }
 
-[[noreturn]] void hcf(void)
+[[noreturn]]
+void hcf(void)
 {
     while (true)
     {
     }
 }
 
-[[noreturn]] void kmain(void)
+[[noreturn]]
+void kmain(void)
 {
     if (!LIMINE_BASE_REVISION_SUPPORTED)
     {
@@ -51,7 +53,7 @@ static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
     puts("Welcome to KiitOS/3!");
     putc('\n');
 
-    putsf("Initialising arch-specific components - ", COLOR | NOBREAK, COLOR_GREEN, COLOR_D_BLUE);
+    putsf("Initialising arch-specific components - ", LOG_COLOR | LOG_NOBREAK, COLOR_GREEN, COLOR_D_BLUE);
     arch_init();
 
     hcf();
