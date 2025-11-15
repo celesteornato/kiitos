@@ -8,6 +8,7 @@
 #include "amd64/memory/manager/pmm.h"
 #include "fun/colors.h"
 #include "limine.h"
+#include "meta/ldsymbols.h"
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
@@ -33,6 +34,16 @@ static inline void refresh_tlb(void)
     __asm__ volatile("mov %cr3, %rax; mov %rax, %cr3");
 }
 
+static void init_map_kernel_section(uintptr_t *pml4, uint8_t *section_start, uint8_t *section_end,
+                                    ptrdiff_t offset, uint64_t flags)
+{
+    // The potential rounding-down is wanted, as a section that ends less than 4096 bytes after the
+    // start of a page is still in that page anyways
+    size_t len = (uintptr_t)(section_end - section_start) / 4096;
+
+    hhdm_mmap_len(pml4, (uintptr_t)(section_start - offset), section_start, flags, len);
+}
+
 void vmm_init(void)
 {
     if (is_vmm_initialised)
@@ -44,28 +55,37 @@ void vmm_init(void)
     constexpr uint64_t standard_flags = PTE_PRESENT | PTE_RDWR;
     uintptr_t *pml4 = hhdm_get_page();
 
-    // We set up recursive mapping while we still have pml4 on hand.
+    // We set up the recursive pagemap while we still have pml4 on hand.
     pml4[511] = hhdm_phys(pml4) | standard_flags;
 
     uintptr_t kern_add_p = kern_request.response->physical_base;
-    uintptr_t kern_add_v = kern_request.response->virtual_base;
+    ptrdiff_t kern_offset = &ld_kernel_start - (uint8_t *)kern_add_p;
+
+    // We map the different sections of the kernel, text is the only one that isn't exec-protected
+    init_map_kernel_section(pml4, &ld_text_start, &ld_text_end, kern_offset, standard_flags);
+    init_map_kernel_section(pml4, &ld_data_start, &ld_data_end, kern_offset,
+                            standard_flags | PTE_NX);
+    init_map_kernel_section(pml4, &ld_limine_start, &ld_limine_end, kern_offset,
+                            standard_flags | PTE_NX);
+
+    putsf("kern spans from 0x% til 0x%", LOG_UNUM, 16, &ld_text_start, &ld_data_end);
+    putsf("limine at       0x% til 0x%", LOG_UNUM, 16, &ld_limine_start, &ld_limine_end);
+    putsf("fp spans from   0x% til 0x%", LOG_UNUM, 16, get_fb_address(),
+          (char *)get_fb_address() + get_fb_size());
 
     struct limine_memmap_response *mmr = memmap_request.response;
 
     for (uint64_t i = 0; i < mmr->entry_count; ++i)
     {
-        size_t len = (mmr->entries[i]->length / 4096) + 1;
+        size_t len = (mmr->entries[i]->length / 4096);
         uintptr_t base = mmr->entries[i]->base;
         uint64_t type = mmr->entries[i]->type;
-
         switch (type)
         {
-        case LIMINE_MEMMAP_KERNEL_AND_MODULES:
-            hhdm_mmap_len(pml4, kern_add_p, kern_add_v, standard_flags, len);
-            break;
         case LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE:
-            // 4k-alignment is guaranteed so we can save one page here
-            hhdm_mmap_len(pml4, base, (uintptr_t)hhdm_virt(base), PTE_PRESENT | PTE_RDWR, len - 1);
+            hhdm_mmap_len(pml4, base, hhdm_virt(base), standard_flags, len);
+            putsf("Mapping brec at 0x% til 0x%", LOG_UNUM, 16, hhdm_virt(base),
+                  (char *)hhdm_virt(base) + (len * 4096));
             break;
         default:
             break;
@@ -73,7 +93,7 @@ void vmm_init(void)
     }
 
     uintptr_t fb_padd = hhdm_phys((void *)get_fb_address());
-    hhdm_mmap_len(pml4, fb_padd, get_fb_address(), standard_flags, 1 + (get_fb_size() / 4096));
+    hhdm_mmap_len(pml4, fb_padd, (void *)get_fb_address(), standard_flags, (get_fb_size() / 4096));
     switch_cr3(pml4);
 }
 

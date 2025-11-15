@@ -22,7 +22,7 @@ void hhdm_mmap(uintptr_t pml4[static 1], uintptr_t physaddr, uintptr_t vaddr, ui
 /* While the hhdm is active, works as a repeated mmap of contiguous v/p addresses. If you don't know
  * what "pml4" should be when calling this function, you probably should not be calling this
  * function. */
-void hhdm_mmap_len(uintptr_t pml4[static 1], uintptr_t paddr, uintptr_t vaddr, size_t flags,
+void hhdm_mmap_len(uintptr_t pml4[static 1], uintptr_t paddr, void* vaddr, size_t flags,
                    size_t length);
 
 #endif // HHDM_SETUP_H_

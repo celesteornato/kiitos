@@ -89,24 +89,24 @@ void hhdm_mmap(uintptr_t pml4[static 1], uintptr_t physaddr, uintptr_t vaddr, ui
 
     setup_page_layer(&pml4[pml4_idx], flags);
     uintptr_t *pml3 = hhdm_virt(pml4[pml4_idx]);
-    pml3[511] = hhdm_phys(pml3) | flags;
+    pml3[511] = hhdm_phys(pml3) | PTE_PRESENT | PTE_RDWR;
 
     setup_page_layer(&pml3[pml3_idx], flags);
     uintptr_t *pml2 = hhdm_virt(pml3[pml3_idx]);
-    pml2[511] = hhdm_phys(pml2) | flags;
+    pml2[511] = hhdm_phys(pml2) | PTE_PRESENT | PTE_RDWR;
 
     setup_page_layer(&pml2[pml2_idx], flags);
     uintptr_t *pml1 = hhdm_virt(pml2[pml2_idx]);
-    pml1[511] = hhdm_phys(pml1) | flags;
+    pml1[511] = hhdm_phys(pml1) | PTE_PRESENT | PTE_RDWR;
 
     pml1[pml1_idx] = physaddr_aligned | flags;
 }
 
-void hhdm_mmap_len(uintptr_t pml4[static 1], uintptr_t paddr, uintptr_t vaddr, size_t flags,
+void hhdm_mmap_len(uintptr_t pml4[static 1], uintptr_t paddr, void* vaddr, size_t flags,
                    size_t length)
 {
     for (size_t i = 0; i < length; ++i)
     {
-        hhdm_mmap(pml4, paddr + (i * 4096), vaddr + (i * 4096), flags);
+      hhdm_mmap(pml4, paddr + (i * 4096), (uintptr_t)vaddr + (i * 4096), flags);
     }
 }
