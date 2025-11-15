@@ -5,10 +5,10 @@
 #include <stdint.h>
 
 enum log_flags : uint32_t {
-    NOBREAK = 1 << 0, // Removes the linebreak at the end of dbg_putsf
-    COLOR = 1 << 1,   // Specifies custom dbg_putsf fg+bg colours
-    NUM = 1 << 2,     // Prints one number per % in the string, incompatible with UNUM
-    UNUM = 1 << 3,    // Prints one unsigned number per % in the string, incompatible with NUM
+    LOG_NOBREAK = 1 << 0, // Removes the linebreak at the end of dbg_putsf
+    LOG_COLOR = 1 << 1,   // Specifies custom dbg_putsf fg+bg colours
+    LOG_NUM = 1 << 2,     // Prints one number per % in the string, incompatible with UNUM
+    LOG_UNUM = 1 << 3,    // Prints one unsigned number per % in the string, incompatible with NUM
 };
 
 // You MUST call this function before any other one in this header!

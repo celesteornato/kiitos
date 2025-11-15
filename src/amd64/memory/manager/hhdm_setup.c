@@ -49,7 +49,7 @@ void *hhdm_get_page(void)
     enum pmm_err err = pmm_alloc(&paddr);
     if (err != PMM_OK)
     {
-        putsf("hhdm_get_page : pmm_alloc returned an error", COLOR, COLOR_RED);
+        putsf("hhdm_get_page : pmm_alloc returned an error", LOG_COLOR, COLOR_RED);
         return nullptr;
     }
     void *addr = hhdm_virt(paddr);

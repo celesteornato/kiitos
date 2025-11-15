@@ -37,7 +37,7 @@ void vmm_init(void)
 {
     if (is_vmm_initialised)
     {
-        putsf("Attempt to re-init vmm after it has already been done!", COLOR, COLOR_RED,
+        putsf("Attempt to re-init vmm after it has already been done!", LOG_COLOR, COLOR_RED,
               COLOR_D_BLUE);
         return;
     }
@@ -137,8 +137,8 @@ void mmap(uintptr_t paddr, void *vaddr, uint64_t flags)
     if (pml1[pml1_idx] & PTE_PRESENT)
     {
         putsf("Trying to mmap to an already-existing vaddr!  PML1 of 0x% for vadd 0x%",
-              COLOR | UNUM, COLOR_PURPLE, COLOR_D_BLUE, 16, pml1[pml1_idx], vaddr);
-        putsf("indices: % % % %", UNUM, 16, pml1_idx, pml2_idx, pml3_idx, pml4_idx);
+              LOG_COLOR | LOG_UNUM, COLOR_PURPLE, COLOR_D_BLUE, 16, pml1[pml1_idx], vaddr);
+        putsf("indices: % % % %", LOG_UNUM, 16, pml1_idx, pml2_idx, pml3_idx, pml4_idx);
         goto error;
     }
 
@@ -147,7 +147,7 @@ void mmap(uintptr_t paddr, void *vaddr, uint64_t flags)
     return;
 
 error:
-    putsf("Encountered error allocating!", COLOR, COLOR_RED, COLOR_D_BLUE);
+    putsf("Encountered error allocating!", LOG_COLOR, COLOR_RED, COLOR_D_BLUE);
     while (true)
     {
     }
@@ -192,7 +192,7 @@ void munmap(void *vaddr)
     uintptr_t paddr = pml1[pml1_idx] & ~0xFFFULL;
     if (pmm_free(paddr) != PMM_OK)
     {
-        putsf("PMM Free error @ munmap : % isn't pmm_alloc-ed", UNUM, 16, paddr);
+        putsf("PMM Free error @ munmap : % isn't pmm_alloc-ed", LOG_UNUM, 16, paddr);
         return;
     }
     pml1[pml1_idx] = 0;

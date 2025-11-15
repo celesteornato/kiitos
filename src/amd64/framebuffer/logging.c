@@ -30,7 +30,7 @@ static struct {
     uint32_t bg;
 } fb_info;
 
-extern const struct psf_font _binary_src_assets_spleen_psf_start; // NOLINT;
+extern const struct psf_font _binary_src_assets_spleen_psf_start; // NOLINT
 
 const struct psf_font *default_font = &_binary_src_assets_spleen_psf_start;
 
@@ -190,7 +190,7 @@ static void print_unumber(uint64_t n, uint32_t radix)
 {
     if (radix == 0)
     {
-        putsf(" RADIX 0! ", NOBREAK | COLOR, COLOR_RED, COLOR_D_BLUE);
+        putsf(" RADIX 0! ", LOG_NOBREAK | LOG_COLOR, COLOR_RED, COLOR_D_BLUE);
     }
     if (n == 0)
     {
@@ -238,7 +238,7 @@ void putsf(const char *str, uint32_t flags, ...)
     uint32_t old_fg = fb_info.fg;
     uint32_t old_bg = fb_info.bg;
 
-    if (flags & COLOR)
+    if (flags & LOG_COLOR)
     {
 
         fb_info.fg = va_arg(args, uint32_t);
@@ -246,7 +246,7 @@ void putsf(const char *str, uint32_t flags, ...)
     }
 
     uint32_t radix = 0;
-    if (flags & UNUM)
+    if (flags & LOG_UNUM)
     {
         radix = va_arg(args, uint32_t);
     }
@@ -254,12 +254,12 @@ void putsf(const char *str, uint32_t flags, ...)
     for (int i = 0; str[i] != '\0'; ++i)
     {
 
-        if (str[i] == '%' && flags & UNUM)
+        if (str[i] == '%' && flags & LOG_UNUM)
         {
             print_unumber(va_arg(args, uint64_t), radix);
             continue;
         }
-        if (str[i] == '%' && flags & NUM)
+        if (str[i] == '%' && flags & LOG_NUM)
         {
             print_number(va_arg(args, int64_t), radix);
             continue;
@@ -268,7 +268,7 @@ void putsf(const char *str, uint32_t flags, ...)
         putc(str[i]);
     }
 
-    if (!(flags & NOBREAK))
+    if (!(flags & LOG_NOBREAK))
     {
         putc('\n');
     }

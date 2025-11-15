@@ -12,7 +12,7 @@
 void arch_init(void)
 {
     // Extra linebreak is wanted and cosmetic
-    putsf("AMD64\n", COLOR, COLOR_BLUE | COLOR_GREEN, COLOR_D_BLUE);
+    putsf("AMD64\n", LOG_COLOR, COLOR_BLUE | COLOR_GREEN, COLOR_D_BLUE);
 
     __asm__ volatile("cli");
 
@@ -35,8 +35,8 @@ void arch_init(void)
     uintptr_t nvme_baddr = 0;
     if (find_nvme_baddr(&nvme_baddr) != NVME_CONTROLS_OK)
     {
-        putsf("Panic! Could not find nvme!", COLOR, COLOR_RED, COLOR_D_BLUE);
+        putsf("Panic! Could not find nvme!", LOG_COLOR, COLOR_RED, COLOR_D_BLUE);
         __asm__("cli;hlt;");
     }
-    putsf("\tFound NVMe at base address 0x%!", UNUM, 16, nvme_baddr);
+    putsf("\tFound NVMe at base address 0x%!", LOG_UNUM, 16, nvme_baddr);
 }

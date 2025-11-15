@@ -12,7 +12,7 @@ struct [[gnu::packed]] register_info {
 [[noreturn]]
 static void death(void)
 {
-    putsf("Oop, seems like you've died!", COLOR, COLOR_RED | COLOR_BLUE, COLOR_D_BLUE);
+    putsf("Oop, seems like you've died!", LOG_COLOR, COLOR_RED | COLOR_BLUE, COLOR_D_BLUE);
     while (true)
     {
     }
@@ -21,7 +21,7 @@ static void death(void)
 [[noreturn]]
 static void pf_handler(uintptr_t vaddr)
 {
-    putsf("#PF! At %", UNUM, 16, vaddr);
+    putsf("#PF! At %", LOG_UNUM, 16, vaddr);
     death();
 }
 
