@@ -20,5 +20,6 @@ CompileFlags:
   -Wconversion,
   -Wvla,
   -Wunreachable-code,
-  -I./include/
+  -I./include/,
+  -DKIITOS_BUILD_AMD64 # This one is for linting purposes
   ]

@@ -10,6 +10,7 @@ BraceWrapping:
   BeforeElse:      true
   IndentBraces:    false
 BreakBeforeBraces: Custom
+BreakAfterAttributes: Always
 
 UseTab: Never
 IndentWidth: 4
