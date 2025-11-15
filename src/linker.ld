@@ -22,26 +22,32 @@ SECTIONS
     /* Any address in this region will do, but often 0xffffffff80000000 is chosen as */
     /* that is the beginning of the region. */
     . = 0xffffffff80000000;
+ld_kernel_start = .;
 
     /* Define a section to contain the Limine requests and assign it to its own PHDR */
     .limine_requests : {
-        KEEP(*(.limine_requests_start))
-        KEEP(*(.limine_requests))
-        KEEP(*(.limine_requests_end))
+        ld_limine_start = .;
+        KEEP(*(.limine_requests_start));
+        KEEP(*(.limine_requests));
+        KEEP(*(.limine_requests_end));
+        ld_limine_end = .;
     } :limine_requests
 
     /* Move to the next memory page for .text */
     . = ALIGN(CONSTANT(MAXPAGESIZE));
 
     .text : {
-        *(.text .text.*)
+    	ld_text_start = .;
+        *(.text .text.*);
+    	ld_text_end = .;
     } :text
 
     /* Move to the next memory page for .rodata */
     . = ALIGN(CONSTANT(MAXPAGESIZE));
 
     .rodata : {
-        *(.rodata .rodata.*)
+    	ld_data_start = .;
+        *(.rodata .rodata.*);
     } :rodata
 
     /* Move to the next memory page for .data */
@@ -58,6 +64,7 @@ SECTIONS
     .bss : {
         *(.bss .bss.*)
         *(COMMON)
+	ld_data_end = .;
     } :data
 
     /* Discard .note.* and .eh_frame* since they may cause issues on some hosts. */
@@ -65,4 +72,6 @@ SECTIONS
         *(.eh_frame*)
         *(.note .note.*)
     }
+
+    ld_kernel_end = .;
 }
