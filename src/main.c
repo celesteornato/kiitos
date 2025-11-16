@@ -10,11 +10,12 @@
 #include "amd64/amd64_init.h"
 #endif
 
-[[gnu::used, gnu::section(".limine_requests")]] static volatile LIMINE_BASE_REVISION(3)
+// This line below is honestly awful, but without the extranuous semicolon the formatter goes crazy
+[[gnu::used, gnu::section(".limine_requests")]] static volatile LIMINE_BASE_REVISION(3); // NOLINT
 
-    [[gnu::used,
-      gnu::section(".limine_requests")]] static volatile struct limine_framebuffer_request
-    framebuffer_request = {.id = LIMINE_FRAMEBUFFER_REQUEST, .revision = 0};
+[[gnu::used, gnu::section(".limine_requests")]]
+static volatile struct limine_framebuffer_request framebuffer_request = {
+    .id = LIMINE_FRAMEBUFFER_REQUEST, .revision = 0};
 
 static inline uint64_t pixel_per_row(struct limine_framebuffer *fb)
 {
@@ -47,13 +48,13 @@ void kmain(void)
 
     logging_config(fb_ptr, framebuffer->width, framebuffer->height, pixel_per_row(framebuffer));
     change_fb_colors(COLOR_WHITE, COLOR_D_BLUE);
-
     putc('\f');
     puts(foomp_art);
     puts("Welcome to KiitOS/3!");
     putc('\n');
 
-    putsf("Initialising arch-specific components - ", LOG_COLOR | LOG_NOBREAK, COLOR_GREEN, COLOR_D_BLUE);
+    putsf("Initialising arch-specific components - ", LOG_COLOR | LOG_NOBREAK, COLOR_GREEN,
+          COLOR_D_BLUE);
     arch_init();
 
     hcf();
