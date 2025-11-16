@@ -9,10 +9,31 @@ struct [[gnu::packed]] register_info {
     uint64_t rip;
 };
 
+static struct register_info get_registers(void)
+{
+    struct register_info inf;
+    __asm__ volatile("mov %%rbp, %0;"
+                     "mov %%rsp, %1;"
+                     "leaq 0(%%rip), %2;" // Hack, %rip cannot be addressed directly
+                     : "=g"(inf.rbp), "=g"(inf.rsp), "=a"(inf.rip));
+    return inf;
+}
+
+static void print_reg(void)
+{
+    struct register_info regs = get_registers();
+    putsf("Registers:\n"
+          "\trbp: 0x%\n"
+          "\trsp: 0x%\n"
+          "\trip: 0x%",
+          LOG_UNUM, 16, regs.rbp, regs.rsp, regs.rip);
+}
+
 [[noreturn]]
 static void death(void)
 {
     putsf("Oop, seems like you've died!", LOG_COLOR, COLOR_RED | COLOR_BLUE, COLOR_D_BLUE);
+    print_reg();
     while (true)
     {
     }
