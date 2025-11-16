@@ -68,32 +68,25 @@ void vmm_init(void)
     init_map_kernel_section(pml4, &ld_limine_start, &ld_limine_end, kern_offset,
                             standard_flags | PTE_NX);
 
-    putsf("kern spans from 0x% til 0x%", LOG_UNUM, 16, &ld_text_start, &ld_data_end);
-    putsf("limine at       0x% til 0x%", LOG_UNUM, 16, &ld_limine_start, &ld_limine_end);
-    putsf("fp spans from   0x% til 0x%", LOG_UNUM, 16, get_fb_address(),
-          (char *)get_fb_address() + get_fb_size());
-
     struct limine_memmap_response *mmr = memmap_request.response;
 
     for (uint64_t i = 0; i < mmr->entry_count; ++i)
     {
+        // Note: the code is formatted like that because we only have one case where we want to
+        // remap, turn this into a switch case if more is needed.
+        if (mmr->entries[i]->type != LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE)
+        {
+            continue;
+        }
+
         size_t len = (mmr->entries[i]->length / 4096);
         uintptr_t base = mmr->entries[i]->base;
-        uint64_t type = mmr->entries[i]->type;
-        switch (type)
-        {
-        case LIMINE_MEMMAP_BOOTLOADER_RECLAIMABLE:
-            hhdm_mmap_len(pml4, base, hhdm_virt(base), standard_flags, len);
-            putsf("Mapping brec at 0x% til 0x%", LOG_UNUM, 16, hhdm_virt(base),
-                  (char *)hhdm_virt(base) + (len * 4096));
-            break;
-        default:
-            break;
-        }
+        hhdm_mmap_len(pml4, base, hhdm_virt(base), standard_flags | PTE_NX, len);
     }
 
     uintptr_t fb_padd = hhdm_phys((void *)get_fb_address());
-    hhdm_mmap_len(pml4, fb_padd, (void *)get_fb_address(), standard_flags, (get_fb_size() / 4096));
+    hhdm_mmap_len(pml4, fb_padd, (void *)get_fb_address(), standard_flags | PTE_NX,
+                  (get_fb_size() / 4096));
     switch_cr3(pml4);
 }
 

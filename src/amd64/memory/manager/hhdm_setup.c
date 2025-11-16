@@ -59,6 +59,7 @@ void *hhdm_get_page(void)
 
 static void setup_page_layer(uintptr_t *pmle, size_t flags)
 {
+  (void)flags;
     /* We only pass in elements of an initially-zeroed-out array, so this flag
      * cannot be wrongfully set */
     if (*pmle & PTE_PRESENT)
@@ -73,7 +74,7 @@ static void setup_page_layer(uintptr_t *pmle, size_t flags)
         __asm__ volatile("cli; hlt");
     }
 
-    *pmle = hhdm_phys(pml_child) | flags;
+    *pmle = hhdm_phys(pml_child) | PTE_PRESENT | PTE_RDWR;
 }
 
 /* We take pml_n at the index indicated by the vaddr, make it point to a physical page
@@ -98,6 +99,11 @@ void hhdm_mmap(uintptr_t pml4[static 1], uintptr_t physaddr, uintptr_t vaddr, ui
     setup_page_layer(&pml2[pml2_idx], flags);
     uintptr_t *pml1 = hhdm_virt(pml2[pml2_idx]);
     pml1[511] = hhdm_phys(pml1) | PTE_PRESENT | PTE_RDWR;
+
+    if (pml1[pml1_idx] & PTE_PRESENT)
+    {
+      putsf("Warning! the page at vaddr 0x% is already in use!", LOG_UNUM, 16, vaddr);
+    }
 
     pml1[pml1_idx] = physaddr_aligned | flags;
 }
