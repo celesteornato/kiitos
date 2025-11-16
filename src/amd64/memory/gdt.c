@@ -47,6 +47,6 @@ static const struct [[gnu::packed]] {
 
 void gdt_init(void)
 {
-    __asm__ volatile("lgdt %0" ::"m"(gdtr));
+    __asm__ volatile("lgdt %0" ::"g"(gdtr));
     asm_reload_segments();
 }
