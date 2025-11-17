@@ -7,7 +7,7 @@ enum pci_ports : uint16_t { PCI_CONFIG_IN = 0x0CF8, PCI_CONFIG_OUT = 0x0CFC };
 static constexpr uint8_t PCI_MAX_DEV_NUM = 64;
 static constexpr uint8_t PCI_MAX_BUS = 255;
 
-struct pci_config_message {
+struct [[gnu::packed]] pci_config_message {
     uint8_t offset;
     uint8_t id; // 3 func number + 5 dev number
     uint8_t bus_number;
