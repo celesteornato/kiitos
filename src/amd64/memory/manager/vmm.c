@@ -34,13 +34,12 @@ static inline void refresh_tlb(void)
     __asm__ volatile("mov %cr3, %rax; mov %rax, %cr3");
 }
 
-static void init_map_kernel_section(uintptr_t *pml4, uint8_t *section_start, uint8_t *section_end,
+static inline void init_map_kernel_section(uintptr_t *pml4, uint8_t *section_start, uint8_t *section_end,
                                     ptrdiff_t offset, uint64_t flags)
 {
     // The potential rounding-down is wanted, as a section that ends less than 4096 bytes after the
     // start of a page is still in that page anyways
     size_t len = (uintptr_t)(section_end - section_start) / 4096;
-
     hhdm_mmap_len(pml4, (uintptr_t)(section_start - offset), section_start, flags, len);
 }
 
@@ -118,7 +117,7 @@ void mmap(uintptr_t paddr, void *vaddr, uint64_t flags)
         {
             goto error;
         }
-        pml4[pml4_idx] |= PTE_PRESENT | flags;
+        pml4[pml4_idx] |= PTE_PRESENT | PTE_RDWR;
         memset(pml3, 0, PAGE_SIZE);
     }
 
@@ -129,7 +128,7 @@ void mmap(uintptr_t paddr, void *vaddr, uint64_t flags)
         {
             goto error;
         }
-        pml3[pml3_idx] |= PTE_PRESENT | flags;
+        pml3[pml3_idx] |= PTE_PRESENT | PTE_RDWR;
         memset(pml2, 0, PAGE_SIZE);
     }
 
@@ -140,7 +139,7 @@ void mmap(uintptr_t paddr, void *vaddr, uint64_t flags)
         {
             goto error;
         }
-        pml2[pml2_idx] |= PTE_PRESENT | flags;
+        pml2[pml2_idx] |= PTE_PRESENT | PTE_RDWR;
         memset(pml1, 0, PAGE_SIZE);
     }
 
