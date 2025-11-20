@@ -96,6 +96,35 @@ void clear_fb(uint32_t bg)
     }
 }
 
+void display_image(const char image[static 1], size_t width, size_t height, size_t x, size_t y)
+{
+    for (size_t j = 0; j < height; ++j)
+    {
+        if (j + y >= fb_info.height)
+        {
+            break;
+        }
+        for (size_t i = 0; i < width; ++i)
+        {
+            if (i + x >= fb_info.width)
+            {
+                break;
+            }
+            // We ignore the pixel if it is transparent
+            size_t idx = 4 * (i + (j * width));
+            uint32_t pixel =
+                (uint32_t)((image[idx] << 16) | (image[idx + 1] << 8) | image[idx + 2]);
+
+            if (image[idx + 3] == 0)
+            {
+                continue;
+            }
+            size_t fb_idx = (i + x) + ((j + y) * fb_info.width);
+            fb_info.fb[fb_idx] = pixel;
+        }
+    }
+}
+
 static void clear_line(void)
 {
     size_t w = fb_info.width;

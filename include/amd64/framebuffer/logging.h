@@ -16,6 +16,7 @@ void logging_config(volatile uint32_t *fb, size_t width, size_t height, size_t p
 void change_fb_colors(uint32_t fg, uint32_t bg);
 
 void clear_fb(uint32_t);
+void display_image(const char image[static 1], size_t width, size_t height, size_t x, size_t y);
 void putc(char);
 void puts(const char *);
 
@@ -24,7 +25,7 @@ uintptr_t get_fb_address(void);
 uintptr_t get_fb_size(void);
 
 /*
- * Put String with Flags. Flags are given in dbgio_flags.
+ * Put String with Flags. Flags are given in framebuffer/logging.
  * The variable arguments are evaluated in that order, and no extra argument is required without
  * flags:
  ** Color: uint32_t fg, uint32_t bg

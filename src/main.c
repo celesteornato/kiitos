@@ -1,10 +1,13 @@
 #include "amd64/framebuffer/logging.h" // I *think* this one is portable
+#include "amd64/memory/manager/hhdm_setup.h"
+#include "amd64/memory/manager/vmm.h"
 #include "fun/art.h"
 #include "fun/colors.h"
 #include "limine.h"
 #include "limits.h"
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 
 #ifdef KIITOS_BUILD_AMD64
 #include "amd64/amd64_init.h"
@@ -56,6 +59,12 @@ void kmain(void)
     putsf("Initialising arch-specific components - ", LOG_COLOR | LOG_NOBREAK, COLOR_GREEN,
           COLOR_D_BLUE);
     arch_init();
+
+    int z;
+    for (size_t i = 0; i < 11; ++i)
+    {
+        display_image(image, 96, 96, i*96 + 200, 0);
+    }
 
     hcf();
 }
