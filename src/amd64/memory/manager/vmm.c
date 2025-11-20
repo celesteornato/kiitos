@@ -39,7 +39,11 @@ static inline void init_map_kernel_section(uintptr_t *pml4, uint8_t *section_sta
 {
     // The potential rounding-down is wanted, as a section that ends less than 4096 bytes after the
     // start of a page is still in that page anyways
-    size_t len = (uintptr_t)(section_end - section_start) / 4096;
+    size_t len = (uintptr_t)(section_end - section_start) / PAGE_SIZE;
+    if (((size_t)section_end - (size_t)section_start) % PAGE_SIZE != 0)
+    {
+      len += 1;
+    }
     hhdm_mmap_len(pml4, (uintptr_t)(section_start - offset), section_start, flags, len);
 }
 

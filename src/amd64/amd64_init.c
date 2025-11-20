@@ -29,7 +29,7 @@ void arch_init(void)
 
     uintptr_t fb_phys = hhdm_phys((void *)get_fb_address());
 
-    mmap(fb_phys, (void *)0x773454700, PTE_PRESENT | PTE_RDWR);
+    mmap(fb_phys, (void *)0x77454000, PTE_PRESENT | PTE_RDWR | PTE_NX);
 
     puts("Discovering NVMe...");
     uintptr_t nvme_baddr = 0;

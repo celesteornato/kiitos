@@ -1,6 +1,7 @@
 #include "amd64/interrupts/handlers.h"
 #include "amd64/framebuffer/logging.h"
 #include "fun/colors.h"
+#include "meta/ldsymbols.h"
 #include <stdint.h>
 
 struct [[gnu::packed]] register_info {
@@ -43,6 +44,23 @@ static void death(void)
 static void pf_handler(uintptr_t vaddr)
 {
     putsf("#PF! At %", LOG_UNUM, 16, vaddr);
+    if (vaddr >= get_fb_address() && vaddr < get_fb_address() + get_fb_size())
+    {
+        puts("Address seems to be located in the Framebuffer");
+    }
+    else if (vaddr >= (uintptr_t)&ld_kernel_start && vaddr < (uintptr_t)&ld_kernel_end)
+    {
+        puts("Address seems to be located in the Kernel");
+        if (vaddr >= (uintptr_t)&ld_data_start && vaddr < (uintptr_t)&ld_data_end)
+        {
+            puts("(Data section)");
+        }
+        else if (vaddr >= (uintptr_t)&ld_text_start && vaddr < (uintptr_t)&ld_text_end)
+        {
+            puts("(Text section)");
+        }
+    }
+
     death();
 }
 
