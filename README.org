@@ -1,5 +1,9 @@
 #+title: KIITOS/3
 
+* *Migrated to Codeberg*
+Kiitos can now be found at [[https://codeberg.org/celesteornato/KiitOS]]
+
+
 * The better-structured sequel to Kiitos/2, the OS with absolutely no correlation to OS/2
 This is the full rework of the original Kiitos/2 from early 2025, now with
 an even better codebase, at the great cost of no longer having any code.
